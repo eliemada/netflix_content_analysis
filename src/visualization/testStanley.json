@@ -1,0 +1,17 @@
+{
+    "nodes":[
+        {"node":0,"name":"Movies"},
+        {"node":1, "name":"TV shows"},
+        {"node":2, "name":"Romance"},
+        {"node":3, "name":"Action"},
+        {"node":4, "name":"Comedie"}
+    ],
+    "links" : [
+        {"source":0, "target":2, "value":200},
+        {"source":0, "target":3, "value":300},
+        {"source":0, "target":4, "value":500},
+        {"source":1, "target":2, "value":1000},
+        {"source":1, "target":3, "value":550},
+        {"source":1, "target":4, "value":700}
+    ]
+}
