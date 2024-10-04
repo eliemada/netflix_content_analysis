@@ -71,31 +71,32 @@ function importFiles(file1) {
     return d3.csv(file1);
 }
 
-function createStanleyDiagram(){
+async function createStanleyDiagram(){
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
     var nbrOfMovie = 0;
     var nbrOfTvShow = 0;
 
-    console.log(d3.version)
+    try {
+        // Await the loading of CSV file
+        const parsedData = await d3.csv("../dataset/cleaned_netflix_data.csv");
 
-    //Load the CSV file using a callback function
-    d3.csv("../dataset/cleaned_netflix_data.csv").then(function(parsedData) {
-        
+        // Process the data
         parsedData.forEach(function(row){
-            elem = row.Series_or_Movie
-            //console.log(elem)
-            if (elem == "Movie"){
-                nbrOfMovie +=1;
-            }else{
-                nbrOfTvShow +=1;
+            let elem = row.Series_or_Movie;
+            if (elem === "Movie") {
+                nbrOfMovie += 1;
+            } else {
+                nbrOfTvShow += 1;
             }
         });
-        console.log(nbrOfMovie); console.log(nbrOfTvShow);
-    }).catch(function(error) {
+
+        // Print the updated values
+        console.log("Number of Movies: " + nbrOfMovie);
+        console.log("Number of TV Shows: " + nbrOfTvShow);
+
+    } catch (error) {
         console.error("Error loading the CSV file:", error);
-    });
-
-
-  
+    }
 
 
     var margin = {top: 10, right: 10, bottom: 10, left: 10},
@@ -109,33 +110,59 @@ function createStanleyDiagram(){
     .append("g")
     .attr("transform",
     "translate(" + margin.left + "," + margin.top + ")");
-    
-    // Color scale used
-    //var color = d3.scaleOrdinal(d3.schemeCategory20);
-    
-    // Set the sankey diagram properties
-    var sankey = d3.sankey()
-    .nodeWidth(100)
-    .nodePadding(29)
-    .size([width, height]);
-   
 
-    // data.Serie.filter(function(d) {
-    //     if (d.Serie == "Movie"){
-    //         nbrOfMovie += 1;
-    //     }else{
-    //         nbrOfTvShow += 1;
-    //     }
-    // })
 
     // load the data
-    d3.json("testStanley.json", function(error, graph) {
+    d3.csv("../dataset/pre_processing/genre_percentages.csv").then(function(data) {
+
+
+        var nodes =[{"node":0,"name":"Movies"},{"node":1, "name":"TV shows"}];
+        var hiddenNodes = []
+        var links = []
+        var hiddenLinks = []
+        var count = 2
+        var otherValueMovie = 0
+        var otherValueTVshow = 0
+        data.forEach(function(d){
+            var movieValue = parseFloat(d.Movies);
+            var tvShowValue = parseFloat(d.TvShows);
+            nodes.push({"node":count,"name":d.Genre});
+            if (d.Percentage > 3) {
+                
+                links.push({"source":0, "target":count, "value":movieValue});
+                links.push({"source":1, "target":count, "value":tvShowValue});
+            }else{
+                hiddenLinks.push({"source":0, "target":count, "value":movieValue});
+                hiddenLinks.push({"source":1, "target":count, "value":tvShowValue});
+                otherValueMovie += movieValue
+                otherValueTVshow += tvShowValue
+            }
+            count += 1
+        })
+        nodes.push({"node":count,"name": "Other"})
+        links.push({"source":0, "target":count, "value":otherValueMovie});
+        links.push({"source":1, "target":count, "value":otherValueTVshow});
+
+        const nodeHasLinks = new Set();
+        links.forEach(link => {
+            nodeHasLinks.add(link.source);
+            nodeHasLinks.add(link.target);
+        });
         
-        // Constructs a new Sankey generator with the default settings.
-        sankey
-        .nodes(graph.nodes)
-        .links(graph.links)
-        .layout(1);
+        // Filter the nodes array to only include nodes that have links
+        const filteredNodes = nodes.filter(node => nodeHasLinks.has(node.node));
+        // Set up the Sankey generator
+        var sankey = d3.sankey()
+        .nodeWidth(70)  // Set node width
+        .nodePadding(0)  // Set padding between nodes
+        .size([950, 490]);  // Set the size of the layout
+
+        // Generate the Sankey layout
+        var graph = sankey({
+            nodes: nodes.map(d => Object.assign({}, d)),  // Deep copy nodes
+            links: links.map(d => Object.assign({}, d))  // Deep copy links
+        });
+
         
         // add in the links
         var link = svg.append("g")
@@ -144,19 +171,21 @@ function createStanleyDiagram(){
         .enter()
         .append("path")
         .attr("class", "link")
-        .attr("d", sankey.link() )
-        .style("stroke-width", function(d) { return Math.max(1, d.dy); })
-        .sort(function(a, b) { return b.dy - a.dy; })
-        .on("mouseover", function(d){
+        .attr("d", d3.sankeyLinkHorizontal() )
+        .style("stroke-width", function(d) { return Math.max(1, d.width); })
+        .sort(function(a, b) { return b.width - a.width; })
+        .on("mouseover", function(event, d) {
             // Show the value on hover
             tooltip.transition()
                 .duration(200)
-                .style("opacity", .9);
-            tooltip.html(d.value+" "+d.target.name+" "+d.source.name)
-                .style("left", (d3.event.pageX) + "px")
-                .style("top", (d3.event.pageY - 28) + "px");
+                .style("opacity", 0.9);
+        
+            // Update the tooltip content and position
+            tooltip.html(`${d.value} ${d.target.name} ← ${d.source.name}`)
+                .style("left", (event.pageX) + "px")   // Use event.pageX for the x-coordinate
+                .style("top", (event.pageY - 28) + "px");  // Use event.pageY for the y-coordinate
         })
-        .on("mouseout", function(d) {
+        .on("mouseout", function() {
             // Hide the tooltip on mouseout
             tooltip.transition()
                 .duration(500)
@@ -176,28 +205,33 @@ function createStanleyDiagram(){
         .data(graph.nodes)
         .enter().append("g")
         .attr("class", "node")
-        .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-        // .call(d3.drag()
-        // .subject(function(d) { return d; })
-        // .on("start", function() { this.parentNode.appendChild(this); })
-        // .on("drag", dragmove));
+        .attr("transform", function(d) { return "translate(" + d.x0 + "," + d.y0 + ")"; })
+        .on("click", function(event, d) {
+            if (d.name == "Other") {
+                // Show hidden genres when "Other" is clicked
+                console.log("hasbeenclicked")
+                showHiddenGenres(event.pageX, event.pageY); // Pass mouse position for positioning
+            }
+        });
         
         // add the rectangles for the nodes
         node
+        .filter(d => nodeHasLinks.has(d.node))
         .append("rect")
-        .attr("height", function(d) { return d.dy; })
+        .attr("height", function(d) { return d.y1 - d.y0; })
         .attr("width", sankey.nodeWidth())
-        .style("fill", function(d) { return d.color = color(d.name.replace(/ .*/, "")); })
-        .style("stroke", function(d) { return d3.rgb(d.color).darker(2); })
+        .style("fill", function(d) { return d.color = color(d.name); })
+        .style("stroke", function(d) { return d3.rgb(d.color); })
         // Add hover text
         .append("title")
         .text(function(d) { return d.name + "\n" + "There is " + d.value + " stuff in this node"; });
         
         // add in the title for the nodes
         node
+        .filter(d => nodeHasLinks.has(d.node))
         .append("text")
         .attr("x", function(d) { return d.dx/5; })
-        .attr("y", function(d) { return d.dy / 2; })
+        .attr("y", function(d) { return (d.y1 - d.y0) / 2; })
         .attr("dy", ".35em")
         .attr("text-anchor", "end")
         .attr("transform", null)
@@ -205,30 +239,51 @@ function createStanleyDiagram(){
         .attr("text-anchor", "start");
 
         node
+        .filter(d => nodeHasLinks.has(d.node))
         .append("text")
         .attr("x", function(d) { return d.dx/5; })
-        .attr("y", function(d) { return d.dy / 2+ 20; })
+        .attr("y", function(d) { return (d.y1 - d.y0) / 2 + 15; })
         .attr("dy", ".35em")
         .attr("text-anchor", "end")
         .attr("transform", null)
-        .text(function(d) { return d.value})
+        .text(function(d) { 
+            if(d.node == 0){
+                return nbrOfMovie
+            }else if(d.node == 1){
+                return nbrOfTvShow
+            }else return d.value
+            })
         .attr("text-anchor", "start");
-        // .filter(function(d) { return d.x < width / 2; })
-        // .attr("x", 6 + sankey.nodeWidth())
 
         
-        // the function for moving the nodes
-        function dragmove(d) {
-            d3.select(this)
-            .attr("transform",
-            "translate("
-            + d.x + ","
-            + (d.y = Math.max(
-                0, Math.min(height - d.dy, d3.event.y))
-            ) + ")");
-            sankey.relayout();
-            link.attr("d", sankey.link() );
+        // Function to show hidden genres in a popup
+        function showHiddenGenres(x, y) {
+            const hiddenGenresContainer = d3.select("#hidden-genres");
+            hiddenGenresContainer.html(''); // Clear previous content
+            hiddenNodes = nodes.filter(d => !nodeHasLinks.has(d.node))
+    
+            hiddenNodes.forEach(hiddenNode => {
+                hiddenGenresContainer.append("div")
+                    .text(hiddenNode.name)
+                    .style("cursor", "pointer")
+                    .on("click", function() {
+                        // Optional: Action on genre click
+                        console.log("Clicked on genre:", hiddenNode.name);
+                    });
+            });
+    
+            // Position the container
+            hiddenGenresContainer.style("left", (x + 10) + "px") // Offset for visibility
+                .style("top", (y + 10) + "px") // Offset for visibility
+                .style("display", "block"); // Show the container
         }
-        
+    
+        // Hide the genres container when clicking elsewhere
+        d3.select("body").on("click", function(event) {
+            const hiddenGenresContainer = d3.select("#hidden-genres");
+            if (!hiddenGenresContainer.node().contains(event.target)) {
+                hiddenGenresContainer.style("display", "none"); // Hide if clicked outside
+            }
+        });
     });
 }
