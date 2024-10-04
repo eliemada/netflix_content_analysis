@@ -68,34 +68,32 @@ const country = [
 ]
 
 function importFiles(file1) {
-    return Promise.all([d3.csv(file1)]);
+    return d3.csv(file1);
 }
 
-
 function createStanleyDiagram(){
-// Load the CSV file using a callback function
-importFiles("src/dataset/cleaned_netflix_data.csv").then(function(data) {
-    // Data is now available as an array of objects
-    console.log(data);
-  
-    // Access individual elements
-    data.forEach(function(row) {
-      console.log(row);
+
+    console.log(d3.version)
+
+    //Load the CSV file using a callback function
+    d3.csv("../dataset/cleaned_netflix_data.csv").then(function(parsedData) {
+
+        // Log parsedData to ensure it's what we expect
+        console.log("Parsed Data:", parsedData);
+
+        // Check if parsedData is an array (which it should be if CSV is loaded correctly)
+        if (Array.isArray(parsedData)) {
+            // Data is now available as an array of objects
+            parsedData.forEach(function(row) {
+                console.log(row.Series);  // Access and log the Genre attribute
+            });
+        } else {
+            console.error("Error: Parsed data is not an array.");
+        }
+    }).catch(function(error) {
+        console.error("Error loading the CSV file:", error);
     });
-  
-    // Access a specific element, e.g., the first row
-    if (data.length > 0) {
-      console.log(data[0]);
-    }
-  
-    // Access a specific column value, e.g., the 'title' column of the first row
-    if (data.length > 0 && data[0].hasOwnProperty('title')) {
-      console.log(data[0].title);
-    }
-  }).catch(function(error) {
-    // Handle any errors that occur during the loading process
-    console.error("Error loading the CSV file:", error);
-  });
+
 
   
 
@@ -113,7 +111,7 @@ importFiles("src/dataset/cleaned_netflix_data.csv").then(function(data) {
     "translate(" + margin.left + "," + margin.top + ")");
     
     // Color scale used
-    var color = d3.scaleOrdinal(d3.schemeCategory20);
+    //var color = d3.scaleOrdinal(d3.schemeCategory20);
     
     // Set the sankey diagram properties
     var sankey = d3.sankey()
@@ -131,8 +129,8 @@ importFiles("src/dataset/cleaned_netflix_data.csv").then(function(data) {
     //         nbrOfTvShow += 1;
     //     }
     // })
-    console.log(nbrOfMovie);
-    console.log(nbrOfTvShow);
+    // console.log(nbrOfMovie);
+    // console.log(nbrOfTvShow);
 
     // load the data
     d3.json("testStanley.json", function(error, graph) {
