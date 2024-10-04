@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Load the CSV file
-file_path = './dataset/cleaned_netflix_data.csv'
+file_path = './src/dataset/cleaned_netflix_data.csv'
 df = pd.read_csv(file_path)
 # Check for missing or blank values
 missing_data = df.isnull().sum()

@@ -9,14 +9,14 @@ def clean_netflix_data(input_file, output_file):
         'Tags', 'Runtime', 'View Rating', 'Production House', 
         'Netflix Link', 'IMDb Link', 'Summary', 'IMDb Votes', 
         'Poster', 'TMDb Trailer', 'Trailer Site', 'Hidden Gem Score', 
-        'Awards Received', 'Awards Nominated For', 'Boxoffice'
+        'Awards Received', 'Awards Nominated For', 'Boxoffice','Director', 'Writer'
     ]
 
     # Remove the specified columns
     df_cleaned = df.drop(columns=columns_to_remove)
 
     # Drop rows where any of the key columns have missing values
-    key_columns = ['Release Date', 'Actors', 'Director', 'Country Availability', 'Genre']
+    key_columns = ['Release Date', 'Actors', 'Country Availability', 'Genre']
     df_cleaned = df_cleaned.dropna(subset=key_columns)
 
     # Rescale IMDb Score (scale of 1-10 to 100)
@@ -46,8 +46,8 @@ def clean_netflix_data(input_file, output_file):
     print(f"Cleaned data with average score and formatted release date saved to {output_file}")
 
 # Example usage
-input_file = './dataset/raw-netflix-rotten-tomatoes-metacritic-imdb.csv'
-output_file = './dataset/cleaned_netflix_data_with_avg_and_date.csv'
+input_file = './src/dataset/raw-netflix-rotten-tomatoes-metacritic-imdb.csv'
+output_file = './src/dataset/cleaned_netflix_data_with_avg_and_date.csv'
 
 # Run this function locally
 clean_netflix_data(input_file, output_file)

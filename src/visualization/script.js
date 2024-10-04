@@ -72,24 +72,24 @@ function importFiles(file1) {
 }
 
 function createStanleyDiagram(){
+    var nbrOfMovie = 0;
+    var nbrOfTvShow = 0;
 
     console.log(d3.version)
 
     //Load the CSV file using a callback function
     d3.csv("../dataset/cleaned_netflix_data.csv").then(function(parsedData) {
-
-        // Log parsedData to ensure it's what we expect
-        console.log("Parsed Data:", parsedData);
-
-        // Check if parsedData is an array (which it should be if CSV is loaded correctly)
-        if (Array.isArray(parsedData)) {
-            // Data is now available as an array of objects
-            parsedData.forEach(function(row) {
-                console.log(row.Series);  // Access and log the Genre attribute
-            });
-        } else {
-            console.error("Error: Parsed data is not an array.");
-        }
+        
+        parsedData.forEach(function(row){
+            elem = row.Series_or_Movie
+            //console.log(elem)
+            if (elem == "Movie"){
+                nbrOfMovie +=1;
+            }else{
+                nbrOfTvShow +=1;
+            }
+        });
+        console.log(nbrOfMovie); console.log(nbrOfTvShow);
     }).catch(function(error) {
         console.error("Error loading the CSV file:", error);
     });
@@ -118,9 +118,7 @@ function createStanleyDiagram(){
     .nodeWidth(100)
     .nodePadding(29)
     .size([width, height]);
-    
-    var nbrOfMovie = 0;
-    var nbrOfTvShow = 0;
+   
 
     // data.Serie.filter(function(d) {
     //     if (d.Serie == "Movie"){
@@ -129,8 +127,6 @@ function createStanleyDiagram(){
     //         nbrOfTvShow += 1;
     //     }
     // })
-    // console.log(nbrOfMovie);
-    // console.log(nbrOfTvShow);
 
     // load the data
     d3.json("testStanley.json", function(error, graph) {
