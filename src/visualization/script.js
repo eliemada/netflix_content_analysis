@@ -1,5 +1,13 @@
+var dataForSankey;
+var dataForSankey2;
+var data;
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+var nbrOfMovie = 0;
+var nbrOfTvShow = 0;
+var yearMin;
+var yearMax;
+var parsedData;
 
-var data
 const genre = [
     "Action",
     "Adventure",
@@ -67,20 +75,29 @@ const country = [
     "United States",
 ]
 
-function importFiles(file1) {
-    return d3.csv(file1);
-}
 
-async function createStanleyDiagram(){
-    var color = d3.scaleOrdinal(d3.schemeCategory10);
-    var nbrOfMovie = 0;
-    var nbrOfTvShow = 0;
+async function createVisualization(){
+
+    function importFiles(file1, file2, file3, file4){
+        return Promise.all([Promise.all([d3.csv(file1), d3.csv(file2)]), d3.csv(file3), d3.csv(file4)])
+    }
+
+    const file1 = "../dataset/pre_processing/movies_genre_counts.csv";
+    const file2 = "../dataset/pre_processing/tv_shows_genre_counts.csv";
+    const file3 = "../dataset/cleaned_netflix_data.csv";
+    const file4 = "../dataset/pre_processing/genre_percentages.csv";
 
     try {
-        // Await the loading of CSV file
-        const parsedData = await d3.csv("../dataset/cleaned_netflix_data.csv");
+        const results = await importFiles(file1, file2, file3, file4);
+        dataForSankey = results[0];
+        parsedData = results[1];
+        dataForSankey2 = results[2];
+    } catch (error) {
+        console.error("Error loading files:", error);
+    }
 
-        // Process the data
+
+
         parsedData.forEach(function(row){
             let elem = row.Series_or_Movie;
             if (elem === "Movie") {
@@ -88,21 +105,145 @@ async function createStanleyDiagram(){
             } else {
                 nbrOfTvShow += 1;
             }
-        });
+    })
 
-        // Print the updated values
-        console.log("Number of Movies: " + nbrOfMovie);
-        console.log("Number of TV Shows: " + nbrOfTvShow);
 
-    } catch (error) {
-        console.error("Error loading the CSV file:", error);
+    // try {
+    //     // Await the loading of CSV file
+    //     parsedData = await d3.csv("../dataset/cleaned_netflix_data.csv");
+
+    //     // Process the data
+
+    //     // Print the updated values
+    //     console.log("Number of Movies: " + nbrOfMovie);
+    //     console.log("Number of TV Shows: " + nbrOfTvShow);
+
+    // } catch (error) {
+    //     console.error("Error loading the CSV file:", error);
+    // }
+
+    // dataForSankey = [d3.csv("../dataset/pre_processing/movies_genre_counts.csv"),d3.csv("../dataset/pre_processing/tv_shows_genre_counts.csv")]
+
+    createSankeyDiagram()
+    createSlider()
+}
+
+function updateDashboard(){
+    updateSankeyDiagram();
+}
+
+function createSlider (){
+    // Get references to the slider container and value elements
+    var slider = document.getElementById("slider");
+    
+    yearMin = 2015;
+    yearMax = 2021;
+
+    // Create the multi-cursor slider with three cursors
+    noUiSlider.create(slider, {
+        start: [2014, 2021], // Initial positions of the three handles
+        connect: true, // Connect all handles with colored bars
+        range: {
+            min: 2015,
+            max: 2021,
+        },
+        tooltips: true,
+        format: {
+            to: function(value) {
+                return Math.round(value);
+            },
+            from: function (value) {
+                return value;
+            }
+        },
+
+        step:1,
+    });
+
+    // Update the values as the handles are moved
+    slider.noUiSlider.on("update", function (values, handle) {
+        yearMin = values[0];
+        yearMax = values[1];
+        updateDashboard();
+    }); 
+
+    // var sliderHandleYear = slider.querySelector(".noUi-handle[data-handle='1']");
+    var sliderHandleMin = slider.querySelector(".noUi-handle[data-handle='0']");
+    var sliderHandleMax = slider.querySelector(".noUi-handle[data-handle='1']");
+
+
+    // sliderHandleMin.addEventListener("mouseup",function (event) {
+    //     filterData();
+    //     updateIdioms(true);
+    // });
+    // sliderHandleMax.addEventListener("mouseup",function (event) {
+    //     filterData();
+    //     updateIdioms(true);
+    // });
+    // // Play flag to indicate if the animation is running
+    // var isPlaying = false;
+    // var playIntervalId;
+
+    // slider.addEventListener("click", function (event) {
+    //     if (isPlaying) {
+    //       clearInterval(playIntervalId); // Pause the animation
+    //       isPlaying = false;
+    //     }
+    //     updateIdioms();
+    //   });
+    
+    var playButton = d3.select("#play-button");
+
+    // Function to update the slider's value
+    function updateSliderValue(newValue) {
+        var currentValues = slider.noUiSlider.get();
+        currentValues[1] = newValue;
+        slider.noUiSlider.set(currentValues);
+        updateIdioms(); // Call your function to update the visualizations
     }
 
-    var stanleyElement = document.getElementById("stanley");
+
+    // Function to handle the play functionality
+    function playSlider() {
+        if (isPlaying) {
+            // If animation is running, stop it
+            clearInterval(playIntervalId);
+            isPlaying = false;
+        } else {
+            var currentValue = parseInt(slider.noUiSlider.get()[1]);
+            var maxValue = yearMax; // Maximum value of the slider
+            var playInterval = 500; // 500 milliseconds (half a second)
+
+            function incrementValue() {
+                currentValue += 5; // Increment the value
+                if (currentValue <= maxValue) {
+                    updateSliderValue(currentValue); // Update the slider
+                } else {
+                    currentValue = yearMin;
+                }
+            }
+
+            playIntervalId = setInterval(incrementValue, playInterval); // Start playing
+            isPlaying = true;
+        }
+    }
+
+    // Add a click event listener to the play button
+    playButton.on("click", function() {
+        playSlider(); // Start/stop playing the slider
+    });
+
+  
+}
+
+function createSankeyDiagram(){
+
+
+    var sankeyElement = document.getElementById("sankey");
 
     // Get the width and height of the element
-    var elementWidth = stanleyElement.offsetWidth;
-    var elementHeight = stanleyElement.offsetHeight;
+    var elementWidth = sankeyElement.offsetWidth;
+    var elementHeight = sankeyElement.offsetHeight;
 
     console.log(elementHeight)
 
@@ -111,7 +252,7 @@ async function createStanleyDiagram(){
     height = elementHeight;
     
     // append the svg object to the body of the page
-    var svg = d3.select("#stanley").append("svg")
+    var svg = d3.select("#sankey").append("svg")
     .attr("width", width)
     .attr("height", height)
     .append("g");
@@ -133,7 +274,7 @@ async function createStanleyDiagram(){
             var movieValue = parseFloat(d.Movies);
             var tvShowValue = parseFloat(d.TvShows);
             nodes.push({"node":count,"name":d.Genre});
-            if (d.Percentage > 3) {
+            if (d.Percentage > 4) {
                 
                 links.push({"source":0, "target":count, "value":movieValue});
                 links.push({"source":1, "target":count, "value":tvShowValue});

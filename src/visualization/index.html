@@ -7,7 +7,10 @@
 
     <!-- Load the sankey.js function -->
     <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.1/nouislider.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.1/nouislider.min.js"></script>
     <script src="script.js"></script>
+    <script src="update.js"></script>
 
     <!-- Create a div where the graph will take place -->
     <div id="my_dataviz"></div>
@@ -34,7 +37,7 @@
     }
     #topBar{
       width: 100%;
-      height: 5%;
+      height: 7%;
       background-color: #000;
       -webkit-text-fill-color: red;
       font-family: 'Netflix_font';
@@ -42,7 +45,7 @@
     }
     #dashboard{
       width: 100%;
-      height: 95%;
+      height: 93%;
 
     }
     #leftSide{
@@ -67,7 +70,7 @@
       width: 100%; /* Make the image fill the width of the div */
       height: 100%; /* Make the image fill the height of the div */
     }
-    #stanley {
+    #sankey {
       width: 98%;
       height: 48%;
       background-color: rgb(255, 255, 255);
@@ -93,20 +96,44 @@
       width: 100%;
       height: 100%;
     }
+    #slider{
+      width: 40%;
+      margin-right: 2%;
+      margin-top: 2.5%;
+      height: 6%;
+      float: right;
+      font-size: medium;
+    }
+    /* Color of the connected bar (the part that fills between handles) */
+    .noUi-connect {
+        background: #ff0000; /* Change the color to red */
+    }
+
+    /* Color of the slider handles */
+    .noUi-handle {
+        background-color: #ffffff; /* Change the handle color to black */
+        
+    }
+
+    /* Slider background (the track) */
+    .noUi-base {
+        background-color: #ffffff; /* Change the background color of the track */
+    }
 
 
     </style>
 </head>
-<body onload="createStanleyDiagram()">
+<body onload="createVisualization()">
   <div id="topBar">
     Netflix around the word from 2015 to 2021
+    <div id="slider"></div>
   </div>
     <div id="dashboard">
       <div id="leftSide">
         <div id="map">
           <img src="../images/IMG_1107.JPEG" alt="map">
         </div>
-          <div id="stanley"></div>
+          <div id="sankey"></div>
       </div>
       <div id="rightSide">
         <div id="zoomIn">
