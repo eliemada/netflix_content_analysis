@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3 World Map</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .country {
+            fill: steelblue;
+            stroke: #fff;
+            stroke-width: 0.5px;
+        }
+        .list-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <svg id="worldMap" width="960" height="500"></svg>
+    <div class="list-container">
+        <ul id="countryList"></ul>
+    </div>
+    <script>
+        // Load the world map data (GeoJSON format)
+        d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(worldData) {
+            // Select the specific SVG element by its ID
+            const svg = d3.select("#worldMap");
+
+            // Create a Mercator projection
+            const projection = d3.geoMercator()
+                .scale(150)
+                .translate([480, 250]);
+
+            // Create a path generator using the projection
+            const path = d3.geoPath().projection(projection);
+
+            // Draw the countries by appending path elements to the SVG
+            svg.selectAll(".country")
+                .data(worldData.features)
+                .enter().append("path")
+                .attr("class", "country")
+                .attr("d", path);
+
+            // Select the list element by its ID
+            const list = d3.select("#countryList");
+
+            // For now, let's add some dummy data to the list
+            const dummyData = ["Item 222", "Item 2", "Item 3"];
+
+            // Add items to the list
+            list.selectAll("li")
+                .data(dummyData)
+                .enter().append("li")
+                .text(d => d);
+        });
+    </script>
+</body>
+</html>

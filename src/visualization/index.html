@@ -1,62 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<meta charset="utf-8">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>D3 World Map</title>
+
+    <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Load the sankey.js function -->
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <script src="script.js"></script>
+
+    <!-- Create a div where the graph will take place -->
+    <div id="my_dataviz"></div>
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .country {
-            fill: steelblue;
-            stroke: #fff;
-            stroke-width: 0.5px;
-        }
-        .list-container {
-            margin-top: 20px;
-        }
+    @font-face {
+        font-family: 'Netflix_font';
+        src: url('NetflixFont.otf') format('opentype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    .link {
+      fill: none;
+      stroke: #000;
+      stroke-opacity: .2;
+    }
+    .link:hover {
+      stroke-opacity: .5;
+    }
+    #topBar{
+      width: 100%;
+      height: 5%;
+      background-color: #000;
+      -webkit-text-fill-color: red;
+      font-family: 'Netflix_font';
+      font-size: xx-large;
+    }
+    #dashboard{
+      width: 100%;
+      height: 95%;
+
+    }
+    #leftSide{
+      width: 55%;
+      height: 100%;
+      background-color: black;
+      float: left;
+    }
+    #rightSide{
+      width: 45%;
+      height: 100%;
+      float: right;
+      background-color: black;
+    }
+    #map{
+      width: 98%;
+      height: 48%;
+      background-color: rgb(255, 255, 255);
+      margin: 1%;
+    }
+    #map img {
+      width: 100%; /* Make the image fill the width of the div */
+      height: 100%; /* Make the image fill the height of the div */
+    }
+    #stanley {
+      width: 98%;
+      height: 48%;
+      background-color: rgb(255, 255, 255);
+      margin: 1%;
+    }
+    #zoomIn{
+      width: 98%;
+      height: 24%;
+      background-color: rgb(255, 255, 255);
+      margin: 1%;
+    }
+    #zoomIn img{
+      width: 100%;
+      height: 100%;
+    }
+    #yourTop{
+      width: 98%;
+      height: 74%;
+      background-color: rgb(255, 255, 255);
+      margin: 1%;
+    }
+    #yourTop img{
+      width: 100%;
+      height: 100%;
+    }
+
+
     </style>
 </head>
-<body>
-    <svg id="worldMap" width="960" height="500"></svg>
-    <div class="list-container">
-        <ul id="countryList"></ul>
+<body onload="createStanleyDiagram()">
+  <div id="topBar">
+    Netflix around the word from 2015 to 2021
+  </div>
+    <div id="dashboard">
+      <div id="leftSide">
+        <div id="map">
+          <img src="../images/IMG_1107.JPEG" alt="map">
+        </div>
+          <div id="stanley"></div>
+      </div>
+      <div id="rightSide">
+        <div id="zoomIn">
+          <img src="../images/IMG_1108.JPEG" alt="zoomIn">
+        </div>
+        <div id="yourTop">
+          <img src="../images/IMG_1109.JPEG" alt="yourTop">
+        </div>
+      </div>
     </div>
-    <script>
-        // Load the world map data (GeoJSON format)
-        d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(worldData) {
-            // Select the specific SVG element by its ID
-            const svg = d3.select("#worldMap");
-
-            // Create a Mercator projection
-            const projection = d3.geoMercator()
-                .scale(150)
-                .translate([480, 250]);
-
-            // Create a path generator using the projection
-            const path = d3.geoPath().projection(projection);
-
-            // Draw the countries by appending path elements to the SVG
-            svg.selectAll(".country")
-                .data(worldData.features)
-                .enter().append("path")
-                .attr("class", "country")
-                .attr("d", path);
-
-            // Select the list element by its ID
-            const list = d3.select("#countryList");
-
-            // For now, let's add some dummy data to the list
-            const dummyData = ["Item 222", "Item 2", "Item 3"];
-
-            // Add items to the list
-            list.selectAll("li")
-                .data(dummyData)
-                .enter().append("li")
-                .text(d => d);
-        });
-    </script>
+    <div id="hidden-genres" style="display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 10px;"></div>
 </body>
-</html>

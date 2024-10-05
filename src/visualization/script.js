@@ -98,18 +98,24 @@ async function createStanleyDiagram(){
         console.error("Error loading the CSV file:", error);
     }
 
+    var stanleyElement = document.getElementById("stanley");
 
-    var margin = {top: 10, right: 10, bottom: 10, left: 10},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+    // Get the width and height of the element
+    var elementWidth = stanleyElement.offsetWidth;
+    var elementHeight = stanleyElement.offsetHeight;
+
+    console.log(elementHeight)
+
+    // var margin = {top: 10, right: 10, bottom: 10, left: 10},
+    width = elementWidth ;
+    height = elementHeight;
     
     // append the svg object to the body of the page
     var svg = d3.select("#stanley").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform",
-    "translate(" + margin.left + "," + margin.top + ")");
+    .attr("width", width)
+    .attr("height", height)
+    .append("g");
+
 
 
     // load the data
@@ -155,7 +161,7 @@ async function createStanleyDiagram(){
         var sankey = d3.sankey()
         .nodeWidth(70)  // Set node width
         .nodePadding(0)  // Set padding between nodes
-        .size([950, 490]);  // Set the size of the layout
+        .size([elementWidth, elementHeight]);  // Set the size of the layout
 
         // Generate the Sankey layout
         var graph = sankey({
@@ -183,7 +189,7 @@ async function createStanleyDiagram(){
             // Update the tooltip content and position
             tooltip.html(`${d.value} ${d.target.name} ← ${d.source.name}`)
                 .style("left", (event.pageX) + "px")   // Use event.pageX for the x-coordinate
-                .style("top", (event.pageY - 28) + "px");  // Use event.pageY for the y-coordinate
+                .style("top", (event.pageY) + "px");  // Use event.pageY for the y-coordinate
         })
         .on("mouseout", function() {
             // Hide the tooltip on mouseout
