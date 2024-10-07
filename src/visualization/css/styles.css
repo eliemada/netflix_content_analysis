@@ -1,0 +1,116 @@
+@font-face {
+    font-family: 'Netflix_font';
+    src: url('../fonts/NetflixFont.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.link {
+    fill: none;
+    stroke: #000;
+    stroke-opacity: .2;
+}
+
+.link:hover {
+    stroke-opacity: .5;
+}
+
+#topBar {
+    width: 100%;
+    height: 7%;
+    background-color: #000;
+    -webkit-text-fill-color: red;
+    font-family: 'Netflix_font';
+    font-size: xx-large;
+}
+
+#dashboard {
+    width: 100%;
+    height: 93%;
+}
+
+#leftSide {
+    width: 55%;
+    height: 100%;
+    background-color: black;
+    float: left;
+}
+
+#rightSide {
+    width: 45%;
+    height: 100%;
+    float: right;
+    background-color: black;
+}
+
+#map {
+    width: 98%;
+    height: 48%;
+    background-color: rgb(255, 255, 255);
+    margin: 1%;
+}
+
+#map img {
+    width: 100%;
+    height: 100%;
+}
+
+#sankey {
+    width: 98%;
+    height: 48%;
+    background-color: rgb(255, 255, 255);
+    margin: 1%;
+}
+
+#zoomIn {
+    width: 98%;
+    height: 24%;
+    background-color: rgb(255, 255, 255);
+    margin: 1%;
+}
+
+#zoomIn img {
+    width: 100%;
+    height: 100%;
+}
+
+#yourTop {
+    width: 98%;
+    height: 74%;
+    background-color: rgb(255, 255, 255);
+    margin: 1%;
+}
+
+#yourTop img {
+    width: 100%;
+    height: 100%;
+}
+
+#slider {
+    width: 40%;
+    margin-right: 2%;
+    margin-top: 2.5%;
+    height: 6%;
+    float: right;
+    font-size: medium;
+}
+
+/* Color of the connected bar (the part that fills between handles) */
+.noUi-connect {
+    background: #ff0000; /* Change the color to red */
+}
+
+/* Color of the slider handles */
+.noUi-handle {
+    background-color: #ffffff; /* Change the handle color to white */
+}
+
+/* Slider background (the track) */
+.noUi-base {
+    background-color: #ffffff; /* Change the background color of the track */
+}
