@@ -1,20 +1,23 @@
 export async function loadData() {
-    const file1 = "./src/dataset/pre_processing/movies_genre_counts.csv";
-    const file2 = "./src/dataset/pre_processing/tv_shows_genre_counts.csv";
-    const file4 = "./src/dataset/pre_processing/genre_percentages.csv";
-    const file3 = "./src/dataset/cleaned_netflix_data.csv";
+    const movieGenreCountsFile = "./src/dataset/pre_processing/movies_genre_counts.csv";
+    const tvShowsGenreCountsFile = "./src/dataset/pre_processing/tv_shows_genre_counts.csv";
+    const genrePercentagesFile = "./src/dataset/pre_processing/genre_percentages.csv";
+    const cleanedNetflixDataFile = "./src/dataset/cleaned_netflix_data.csv";
+    const worldMapDataFile = "./src/dataset/countries-50m.json"; // The JSON file path for world map data
 
     try {
-        const [sankeyData, parsedData, sankeyData2] = await Promise.all([
-            Promise.all([d3.csv(file1), d3.csv(file2)]),
-            d3.csv(file3),
-            d3.csv(file4),
+        const [movieAndTvData, cleanedNetflixData, genrePercentagesData, worldMapData] = await Promise.all([
+            Promise.all([d3.csv(movieGenreCountsFile), d3.csv(tvShowsGenreCountsFile)]),
+            d3.csv(cleanedNetflixDataFile),
+            d3.csv(genrePercentagesFile),
+            d3.json(worldMapDataFile) // Load the JSON file
         ]);
 
         return {
-            dataForSankey: sankeyData,
-            parsedData: parsedData,
-            dataForSankey2: sankeyData2,
+            movieAndTvGenreCounts: movieAndTvData, // More descriptive name for movie and TV genre counts
+            cleanedNetflixData: cleanedNetflixData, // Cleaned Netflix data
+            genrePercentagesData: genrePercentagesData, // Genre percentages data
+            worldMapData: worldMapData, // World map data from JSON
         };
     } catch (error) {
         console.error("Error loading files:", error);

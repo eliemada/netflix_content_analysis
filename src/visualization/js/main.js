@@ -4,9 +4,10 @@
 import { loadData } from './dataLoader.js';
 import { createSankeyDiagram, updateSankeyDiagram } from './sankeyDiagram.js';
 import { createSlider } from './slider.js';
+import { createChoroplethMap } from './map.js'; // Import the choropleth map function
 
 let dataForSankey;
-let dataForSankey2;
+let worldMapData;
 let dataIsLoaded = false;
 let nbrOfMovie = 0;
 let nbrOfTvShow = 0;
@@ -15,10 +16,16 @@ let yearMax = 2021;
 
 async function createVisualization() {
     try {
-        const { dataForSankey: sankeyData, parsedData } = await loadData();
-        dataForSankey = sankeyData;
+        const {
+            movieAndTvGenreCounts, // Updated from dataForSankey
+            cleanedNetflixData, // Updated from parsedData
+            worldMapData: mapData
+        } = await loadData(); // Destructure the loaded data
+        dataForSankey = movieAndTvGenreCounts; // Use the updated variable name
+        worldMapData = mapData; // Assign world map data to a variable
 
-        parsedData.forEach(row => {
+        // Count movies and TV shows
+        cleanedNetflixData.forEach(row => {
             if (row.Series_or_Movie === "Movie") {
                 nbrOfMovie += 1;
             } else {
@@ -27,8 +34,16 @@ async function createVisualization() {
         });
 
         dataIsLoaded = true;
+
+        // Create the Sankey diagram
         createSankeyDiagram(dataForSankey, nbrOfMovie, nbrOfTvShow);
+
+        // Create the slider for the year range
         createSlider(yearMin, yearMax, updateDashboard);
+
+        // Create the choropleth map using world map data and Netflix data
+        createChoroplethMap(worldMapData, '#map');
+
     } catch (error) {
         console.error("Visualization could not be created:", error);
     }
