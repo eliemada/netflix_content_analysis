@@ -23,7 +23,7 @@ export function createSankeyDiagram(data, nbrOfMovie, nbrOfTvShow) {
 
 
     // load the data
-    d3.csv("../dataset/pre_processing/genre_percentages.csv").then(function (data) {
+    d3.csv("./src/dataset/pre_processing/genre_percentages.csv").then(function (data) {
 
         var nodes = [{"node": 0, "name": "Movies"}, {"node": 1, "name": "TV shows"}];
         var hiddenNodes = []

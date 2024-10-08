@@ -1,8 +1,8 @@
 export async function loadData() {
-    const file1 = "../dataset/pre_processing/movies_genre_counts.csv";
-    const file2 = "../dataset/pre_processing/tv_shows_genre_counts.csv";
-    const file4 = "../dataset/pre_processing/genre_percentages.csv";
-    const file3 = "../dataset/cleaned_netflix_data.csv";
+    const file1 = "./src/dataset/pre_processing/movies_genre_counts.csv";
+    const file2 = "./src/dataset/pre_processing/tv_shows_genre_counts.csv";
+    const file4 = "./src/dataset/pre_processing/genre_percentages.csv";
+    const file3 = "./src/dataset/cleaned_netflix_data.csv";
 
     try {
         const [sankeyData, parsedData, sankeyData2] = await Promise.all([
