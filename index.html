@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta tags -->
+    <meta charset="utf-8">
+    <!-- Load external libraries -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.1/nouislider.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.1/nouislider.min.js"></script>
+    <!-- Load custom styles and scripts -->
+    <link rel="stylesheet" href="./src/visualization/css/styles.css">
+    <script type="module" src="./src/visualization/js/main.js"></script>
+    <title>Netflix Visualization</title>
+</head>
+<body onload="createVisualization()">
+<div id="topBar">
+    Netflix around the world from 2015 to 2021
+    <div id="slider"></div>
+</div>
+<div id="dashboard">
+    <div id="leftSide">
+        <div id="map">
+            <img src="src/images/IMG_1107.JPEG" alt="map">
+        </div>
+        <div id="sankey"></div>
+    </div>
+    <div id="rightSide">
+        <div id="zoomIn">
+            <img src="src/images/IMG_1108.JPEG" alt="zoomIn">
+        </div>
+        <div id="yourTop">
+            <img src="src/images/IMG_1109.JPEG" alt="yourTop">
+        </div>
+    </div>
+</div>
+<div id="hidden-genres" style="display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 10px;"></div>
+</body>
+</html>
