@@ -220,7 +220,7 @@ export function createSankeyDiagram(data, nbrOfMovie, nbrOfTvShow) {
 }
 
 
-export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOfMovie, nbrOfTvShow) {
+export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOfMovie, nbrOfTvShow, countByYear) {
 
     var sankeyElement = document.getElementById("sankey");
 
@@ -232,23 +232,32 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
     var height = elementHeight;
 
     // Select the SVG element and clear its contents
-    d3.select("#sankey").select("svg").remove();
-
+    
     // append the svg object to the body of the page
     var svg = d3.select("#sankey").append("svg")
         .attr("width", width)
         .attr("height", height)
         .append("g");
-
-
-    var nodes = [{"node": 0, "name": "Movies"}, {"node": 1, "name": "TV shows"}];
+        
+        
+        var nodes = [{"node": 0, "name": "Movies"}, {"node": 1, "name": "TV shows"}];
     var hiddenNodes = []
     var links = []
     var hiddenLinks = []
     var count = 2
     var otherValueMovie = 0
     var otherValueTVshow = 0
-
+    
+    countByYear.forEach(function (d) {
+        var year = parseInt(d.Year);
+        if (year >= yearMin && year <= yearMax) {
+            var movieValue = parseFloat(d.Movies_Count) || 0;
+            var tvShowValue = parseFloat(d.TVShows_Count) || 0;
+            otherValueMovie += movieValue;
+            otherValueTVshow += tvShowValue;
+        }
+    });
+    
     dataForSankey[0].forEach(function (d) {
         var movieValue = 0;
         for (var year = yearMin; year <= yearMax; year++) {
@@ -256,7 +265,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
         }
         // var movieValue = parseFloat(d[String(yearMin)]);
         nodes.push({"node": count, "name": d.Genre});
-        if (movieValue > 100) {
+        if (movieValue/otherValueMovie > 0.15) {
             links.push({"source": 0, "target": count, "value": movieValue});
         }
         count += 1
@@ -267,11 +276,13 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
         for (var year = yearMin; year <= yearMax; year++) {
             TVshowValue += parseFloat(d[String(year)]) || 0;
         }
-        if (TVshowValue > 10) {
+        if (TVshowValue/otherValueTVshow > 0.15) {
             links.push({"source": 1, "target": count, "value": TVshowValue});
         }
         count += 1
     });
+
+
 
 
     nodes.push({"node": count, "name": "Other"})
@@ -283,7 +294,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
         nodeHasLinks.add(link.source);
         nodeHasLinks.add(link.target);
     });
-
+    
     // Filter the nodes array to only include nodes that have links
     const filteredNodes = nodes.filter(node => nodeHasLinks.has(node.node));
     // Set up the Sankey generator
@@ -307,7 +318,17 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
             console.error("Invalid link coordinates:", link);
         }
     });
-
+    
+    var tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("position", "absolute")
+    .style("background-color", "white")
+    .style("border", "1px solid #ccc")
+    .style("padding", "10px")
+    .style("border-radius", "4px")
+    .style("box-shadow", "0px 0px 10px rgba(0, 0, 0, 0.1)");
+    
     // add in the links
     var link = svg.append("g")
         .selectAll(".link")
@@ -329,23 +350,23 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
                 .style("opacity", 0.9);
 
             // Update the tooltip content and position
-            tooltip.html(`${d.value} ${d.target.name} ← ${d.source.name}`)
-                .style("left", (event.pageX) + "px")   // Use event.pageX for the x-coordinate
-                .style("top", (event.pageY) + "px");  // Use event.pageY for the y-coordinate
+            tooltip.html(`Value: ${d.value}<br>Source: ${d.source.name}<br>Target: ${d.target.name}`)
+            .style("left", (event.pageX) + "px")
+            .style("top", (event.pageY - 28) + "px");
         })
         .on("mouseout", function () {
             // Hide the tooltip on mouseout
             tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
+            .duration(500)
+            .style("opacity", 0);
         });
-
+        
     // Create a tooltip div
-    var tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
+    // var tooltip = d3.select("body").append("div")
+    //     .attr("class", "tooltip")
+    //     .style("opacity", 0);
 
-
+    
     // add in the nodes
     var node = svg.append("g")
         .selectAll(".node")
@@ -361,8 +382,8 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
                 showHiddenGenres(event.pageX, event.pageY); // Pass mouse position for positioning
             }
         });
-
-    // add the rectangles for the nodes
+        
+        // add the rectangles for the nodes
     node
         .filter(d => nodeHasLinks.has(d.node))
         .append("rect")
@@ -382,8 +403,8 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
             return d.name + "\n" + "There is " + d.value + " stuff in this node";
         });
 
-    // add in the title for the nodes
-    node
+        // add in the title for the nodes
+        node
         .filter(d => nodeHasLinks.has(d.node))
         .append("text")
         .attr("x", function (d) {
@@ -414,12 +435,30 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
         .attr("transform", null)
         .text(function (d) {
             if (d.node == 0) {
-                return nbrOfMovie
+                return otherValueMovie
             } else if (d.node == 1) {
-                return nbrOfTvShow
+                return otherValueTVshow
             } else return d.value
         })
         .attr("text-anchor", "start");
+        
+    d3.select("#sankey").select("svg").remove();
+            // Add transitions to links and nodes
+    // link.transition()
+    // .duration(1000)
+    // .attr("d", d3.sankeyLinkHorizontal())
+    // .style("stroke-width", function (d) {
+    //     return Math.max(1, d.width);
+    // });
 
+    // node.select("rect").transition()
+    //     .duration(10000)
+    //     .attr("height", function (d) { return d.y1 - d.y0; })
+    //     .attr("width", sankey.nodeWidth());
+
+    // node.select("text").transition()
+    //     .duration(10000)
+    //     .attr("x", -6)
+    //     .attr("y", function (d) { return (d.y1 - d.y0) / 2; });
 
 }

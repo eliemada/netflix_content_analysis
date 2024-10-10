@@ -7,7 +7,9 @@ import { createChoroplethMap, updateChoroplethMap } from './map.js'; // Import t
 
 let dataForSankey;
 let worldMapData;
+let cleanedNetflixData;
 let countryAvailabilityData;
+let countByYearNetflixData;
 let dataIsLoaded = false;
 let nbrOfMovie = 0;
 let nbrOfTvShow = 0;
@@ -20,12 +22,16 @@ async function createVisualization() {
             movieAndTvGenreCounts,
             cleanedNetflixData,
             worldMapData: mapData,
-            countryAvailabilityData: availabilityData
+            countryAvailabilityData: availabilityData,
+            countByYearData: countByYear
         } = await loadData();
+
+        console.log("Data loaded successfully:", countByYear);
 
         dataForSankey = movieAndTvGenreCounts;
         worldMapData = mapData;
         countryAvailabilityData = availabilityData;
+        countByYearNetflixData = countByYear;
 
         // Count movies and TV shows
         cleanedNetflixData.forEach(row => {
@@ -59,7 +65,7 @@ function updateDashboard(minYear, maxYear) {
     yearMax = maxYear;
 
     // Update the Sankey diagram
-    updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOfMovie, nbrOfTvShow);
+    updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOfMovie, nbrOfTvShow, countByYearNetflixData);
 
     // Update the choropleth map
     updateChoroplethMap(countryAvailabilityData, yearMin, yearMax);
