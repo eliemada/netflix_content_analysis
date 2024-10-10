@@ -29,37 +29,34 @@ html, body {
     font-size: xx-large;
 }
 
+/* Change the dashboard to use Flexbox for a more responsive layout */
 #dashboard {
-    width: 100%;
+    display: flex;
     height: 93%;
+    width: 100%;
 }
 
+/* Left side layout, taking 55% of the width */
 #leftSide {
     width: 55%;
     height: 100%;
     background-color: black;
-    float: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
+/* Right side layout, taking 45% of the width */
 #rightSide {
     width: 45%;
     height: 100%;
-    float: right;
     background-color: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
-#map {
-    width: 98%;
-    height: 48%;
-    background-color: rgb(255, 255, 255);
-    margin: 1%;
-}
-
-#map img {
-    width: 100%;
-    height: 100%;
-}
-
+/* Adjust map and sankey layout */
 #sankey {
     width: 98%;
     height: 48%;
@@ -67,30 +64,35 @@ html, body {
     margin: 1%;
 }
 
-#zoomIn {
+#map {
     width: 98%;
-    height: 24%;
+    height: 48%;
+    background-color: rgb(0, 0, 0);
+    margin: 1%;
+}
+
+/* Images inside map, zoomIn, yourTop should scale to fit their containers */
+#map img, #zoomIn img, #yourTop img {
+    width: 100%;
+    height: 100%;
+}
+
+/* Right side zoom and top sections */
+#zoomIn, #yourTop {
+    width: 98%;
     background-color: rgb(255, 255, 255);
     margin: 1%;
 }
 
-#zoomIn img {
-    width: 100%;
-    height: 100%;
+#zoomIn {
+    height: 24%;
 }
 
 #yourTop {
-    width: 98%;
     height: 74%;
-    background-color: rgb(255, 255, 255);
-    margin: 1%;
 }
 
-#yourTop img {
-    width: 100%;
-    height: 100%;
-}
-
+/* Slider styling */
 #slider {
     width: 40%;
     margin-right: 2%;
@@ -100,17 +102,15 @@ html, body {
     font-size: medium;
 }
 
-/* Color of the connected bar (the part that fills between handles) */
+/* Slider customization */
 .noUi-connect {
     background: #ff0000; /* Change the color to red */
 }
 
-/* Color of the slider handles */
 .noUi-handle {
     background-color: #ffffff; /* Change the handle color to white */
 }
 
-/* Slider background (the track) */
 .noUi-base {
     background-color: #ffffff; /* Change the background color of the track */
 }
