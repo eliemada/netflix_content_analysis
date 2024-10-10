@@ -1,6 +1,12 @@
-// map.js
+// Variables to store elements for updates
+let mapGroup;
+let pathSelection;
+let availabilityByCountry = new Map();
+let colorScale;
+let countryNameCorrections;
+let legendGroup;
 
-export function createChoroplethMap(worldMapData, countryAvailabilityData, containerId) {
+export function createChoroplethMap(worldMapData, countryAvailabilityData, containerId, minYear, maxYear) {
     // Clear previous choropleth map
     d3.select(containerId).selectAll("*").remove();
 
@@ -10,7 +16,7 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
     const height = container.node().getBoundingClientRect().height;
 
     // Set up margins
-    const margin = { top: 20, right: 20, bottom: 50, left: 80 };
+    const margin = { top: 20, right: 20, bottom: 50, left: 20 };
 
     // Create SVG with a background color
     const svg = container
@@ -20,7 +26,7 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
         .style("background-color", "#221F1F");
 
     // Create a group for the map
-    const mapGroup = svg.append("g")
+    mapGroup = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
     // Process the map data
@@ -54,16 +60,8 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
     svg.call(zoom)
         .call(zoom.transform, d3.zoomIdentity.translate(initialX, initialY).scale(initialScale));
 
-    // Prepare the data: create a mapping from country name to availability value
-    const availabilityByCountry = new Map();
-    countryAvailabilityData.forEach(d => {
-        const countryName = d.Country;
-        const overallAvailability = +d.Overall;
-        availabilityByCountry.set(countryName, overallAvailability);
-    });
-
     // Map TopoJSON country names to availability data country names
-    const countryNameCorrections = {
+    countryNameCorrections = {
         "United States of America": "United States",
         "Republic of Korea": "South Korea",
         "Russian Federation": "Russia",
@@ -92,17 +90,47 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
         // Add other corrections as needed
     };
 
-    // Calculate min and max availability
-    const minAvailability = d3.min(countryAvailabilityData, d => +d.Overall);
-    const maxAvailability = d3.max(countryAvailabilityData, d => +d.Overall);
+    // Prepare the data: create a mapping from country name to availability value
+    availabilityByCountry = new Map();
+    countryAvailabilityData.forEach(d => {
+        const countryName = d.Country;
+        let totalAvailability = 0;
+        for (let year = minYear; year <= maxYear; year++) {
+            totalAvailability += +d[String(year)] || 0;
+        }
+        availabilityByCountry.set(countryName, totalAvailability);
+    });
 
-    // Create a color scale using a sequential color interpolator
-    const colorScale = d3.scaleSequential()
+    const availabilityValues = Array.from(availabilityByCountry.values());
+    console.log("Availability Values:", availabilityValues);
+
+    let minAvailability = d3.min(availabilityValues);
+    let maxAvailability = d3.max(availabilityValues);
+    console.log("Min Availability:", minAvailability);
+    console.log("Max Availability:", maxAvailability);
+
+// Handle cases where minAvailability or maxAvailability is undefined
+    if (minAvailability === undefined || maxAvailability === undefined) {
+        console.warn("No data available for the selected year range.");
+        // Set default values to prevent errors
+        minAvailability = 0;
+        maxAvailability = 1;
+    }
+
+// Handle cases where minAvailability and maxAvailability are equal
+    if (minAvailability === maxAvailability) {
+        maxAvailability += 1; // Prevent zero range in domain
+    }
+
+// Create a color scale using a sequential color interpolator
+    colorScale = d3.scaleSequential()
         .domain([minAvailability, maxAvailability])
         .interpolator(d3.interpolateReds);
 
+// **Check if colorScale is defined**
+    console.log("Color Scale:", colorScale);
     // Draw the map with data coloring
-    mapGroup.selectAll("path")
+    pathSelection = mapGroup.selectAll("path")
         .data(filteredCountries.features)
         .join("path")
         .attr("d", path)
@@ -129,9 +157,10 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
     const legendMargin = 10; // Margin from the edges
 
     // Create a group for the legend
-    const legendGroupY = height - margin.bottom - legendHeight - legendMargin - 20;
-    const legendGroup = svg.append("g")
-        .attr("transform", `translate(${legendMargin}, ${height - 0.7 * margin.bottom - legendHeight - legendMargin})`);
+    const legendGroupX = legendMargin;
+    const legendGroupY = height - margin.bottom - legendHeight - legendMargin - 15;
+    legendGroup = svg.append("g")
+        .attr("transform", `translate(${legendGroupX}, ${legendGroupY})`);
 
     // Define the gradient and blur filter within a single <defs> section
     const defs = svg.append("defs");
@@ -162,12 +191,18 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
     blurFilter.append("feGaussianBlur")
         .attr("stdDeviation", 5); // Adjust the blur intensity
 
+    // Adjust background rectangle dimensions
+    const backgroundRectX = -legendMargin;
+    const backgroundRectY = -legendMargin - 25;
+    const backgroundRectWidth = legendWidth + legendMargin * 2;
+    const backgroundRectHeight = legendHeight + legendMargin * 2 + 55 + 30; // Adjusted height
+
     // Add a background rectangle behind the legend with blur filter
     legendGroup.append("rect")
-        .attr("x", -legendMargin)
-        .attr("y", -legendMargin - 25)
-        .attr("width", legendWidth + legendMargin * 2)
-        .attr("height", legendHeight + legendMargin * 2 + 55)
+        .attr("x", backgroundRectX)
+        .attr("y", backgroundRectY)
+        .attr("width", backgroundRectWidth)
+        .attr("height", backgroundRectHeight)
         .attr("fill", "rgba(0, 0, 0, 0.6)") // Semi-transparent black background
         .attr("filter", "url(#blur-filter)") // Apply blur filter
         .attr("rx", 5) // Rounded corners
@@ -188,53 +223,52 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
         .range([0, legendWidth]);
 
     // Add the legend axis
-// Add the legend axis
     const legendAxis = d3.axisBottom(legendAxisScale)
         .ticks(5)
         .tickFormat(d3.format("d"));
 
     const axisGroup = legendGroup.append("g")
+        .attr("class", "legend-axis")
         .attr("transform", `translate(0, ${legendHeight + 5})`)
         .call(legendAxis);
 
-// Change the color of the axis line and ticks to white
+    // Style the axis line and ticks
     axisGroup.selectAll("path")
         .style("stroke", "#fff"); // Axis line color
 
     axisGroup.selectAll("line")
         .style("stroke", "#fff"); // Tick lines color
 
-// Style the tick labels
+    // Style the tick labels
     axisGroup.selectAll("text")
         .attr("dy", "1em") // Adjust vertical position of tick labels
         .style("fill", "#fff")
         .style("font-size", "12px")
         .style("font-family", "Netflix_font");
 
-    // **Optional: Add a border around the legend**
-    legendGroup.append("rect")
-        .attr("x", -legendMargin / 2)
-        .attr("y", -legendMargin / 2 - 20)
-        .attr("width", legendWidth + legendMargin)
-        .attr("height", legendHeight + legendMargin + 50)
-        .attr("fill", "none")
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 0.5);
+    // Add legend title
+    legendGroup.append("text")
+        .attr("x", 0)
+        .attr("y", -10)
+        .text("Availability")
+        .style("fill", "#fff")
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .style("font-family", "Netflix_font");
 
+    // Add 'No Data' indicator
     const noDataX = 0;
-    const noDataY = legendHeight - 30; // Position below the axis labels
+    const noDataY = legendHeight + 35; // Position below the axis labels
 
-// Add a rectangle for 'No Data' color
     legendGroup.append("rect")
         .attr("x", noDataX)
         .attr("y", noDataY)
         .attr("width", 15)
         .attr("height", 15)
-        .attr("fill", "#ccc") // Color for no data
+        .attr("fill", "#ccc") // Same color used for countries with no data
         .attr("stroke", "#fff")
         .attr("stroke-width", 0.5);
 
-// Add text label for 'No Data'
     legendGroup.append("text")
         .attr("x", noDataX + 20)
         .attr("y", noDataY + 12)
@@ -242,4 +276,89 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
         .style("fill", "#fff")
         .style("font-size", "12px")
         .style("font-family", "Netflix_font");
+
+    // Optional: Add a border around the legend
+    legendGroup.append("rect")
+        .attr("x", backgroundRectX)
+        .attr("y", backgroundRectY)
+        .attr("width", backgroundRectWidth)
+        .attr("height", backgroundRectHeight)
+        .attr("fill", "none")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 0.5)
+        .lower();
+}
+
+
+export function updateChoroplethMap(countryAvailabilityData, minYear, maxYear) {
+    // Update the availabilityByCountry map with new data
+    availabilityByCountry.clear();
+    countryAvailabilityData.forEach(d => {
+        const countryName = d.Country;
+        let totalAvailability = 0;
+        for (let year = minYear; year <= maxYear; year++) {
+            totalAvailability += +d[String(year)] || 0;
+        }
+        availabilityByCountry.set(countryName, totalAvailability);
+    });
+
+    // Recalculate min and max availability
+    const availabilityValues = Array.from(availabilityByCountry.values());
+    const minAvailability = d3.min(availabilityValues);
+    const maxAvailability = d3.max(availabilityValues);
+
+    // Update the color scale domain
+    colorScale.domain([minAvailability, maxAvailability]);
+
+    // Update the fills of the map paths
+    pathSelection
+        .transition()
+        .duration(500)
+        .attr("fill", d => {
+            let countryName = d.properties.name;
+            // Correct country names if necessary
+            if (countryNameCorrections[countryName]) {
+                countryName = countryNameCorrections[countryName];
+            }
+            const availability = availabilityByCountry.get(countryName);
+            if (availability !== undefined) {
+                return colorScale(availability);
+            } else {
+                return "#ccc"; // Default color for countries with no data
+            }
+        });
+
+    // Update the legend gradient
+    const numStops = 10;
+    const legendGradient = d3.select("#legend-gradient");
+
+    const legendStops = d3.range(numStops).map(i => {
+        const value = minAvailability + i * (maxAvailability - minAvailability) / (numStops - 1);
+        return { offset: (i / (numStops - 1) * 100) + "%", color: colorScale(value) };
+    });
+
+    legendGradient.selectAll("stop")
+        .data(legendStops)
+        .attr("offset", d => d.offset)
+        .attr("stop-color", d => d.color);
+
+    // Update the legend axis
+    const legendAxisScale = d3.scaleLinear()
+        .domain([minAvailability, maxAvailability])
+        .range([0, 200]); // Use the same legendWidth as before
+
+    const legendAxis = d3.axisBottom(legendAxisScale)
+        .ticks(5)
+        .tickFormat(d3.format("d"));
+
+    legendGroup.select(".legend-axis")
+        .call(legendAxis)
+        .selectAll("text")
+        .attr("dy", "1em")
+        .style("fill", "#fff")
+        .style("font-size", "12px")
+        .style("font-family", "Netflix_font");
+
+    // Update the 'No Data' indicator if necessary (optional)
+    // ...
 }

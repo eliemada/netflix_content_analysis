@@ -1,13 +1,13 @@
 // main.js
 
-// import { genre, country } from './constants.js';
 import { loadData } from './dataLoader.js';
 import { createSankeyDiagram, updateSankeyDiagram } from './sankeyDiagram.js';
 import { createSlider } from './slider.js';
-import { createChoroplethMap } from './map.js'; // Import the choropleth map function
+import { createChoroplethMap, updateChoroplethMap } from './map.js'; // Import the update function
 
 let dataForSankey;
 let worldMapData;
+let countryAvailabilityData;
 let dataIsLoaded = false;
 let nbrOfMovie = 0;
 let nbrOfTvShow = 0;
@@ -17,13 +17,15 @@ let yearMax = 2021;
 async function createVisualization() {
     try {
         const {
-            movieAndTvGenreCounts, // Updated from dataForSankey
-            cleanedNetflixData, // Updated from parsedData
+            movieAndTvGenreCounts,
+            cleanedNetflixData,
             worldMapData: mapData,
-            countryAvailabilityData
-        } = await loadData(); // Destructure the loaded data
-        dataForSankey = movieAndTvGenreCounts; // Use the updated variable name
-        worldMapData = mapData; // Assign world map data to a variable
+            countryAvailabilityData: availabilityData
+        } = await loadData();
+
+        dataForSankey = movieAndTvGenreCounts;
+        worldMapData = mapData;
+        countryAvailabilityData = availabilityData;
 
         // Count movies and TV shows
         cleanedNetflixData.forEach(row => {
@@ -36,25 +38,31 @@ async function createVisualization() {
 
         dataIsLoaded = true;
 
+        // **Create the choropleth map first**
+        createChoroplethMap(worldMapData, countryAvailabilityData, '#map', yearMin, yearMax);
+
         // Create the Sankey diagram
         createSankeyDiagram(dataForSankey, nbrOfMovie, nbrOfTvShow);
 
         // Create the slider for the year range
         createSlider(yearMin, yearMax, updateDashboard);
 
-        // Create the choropleth map using world map data and availability data
-        createChoroplethMap(worldMapData, countryAvailabilityData, '#map');
-
     } catch (error) {
         console.error("Visualization could not be created:", error);
     }
 }
 
+
 function updateDashboard(minYear, maxYear) {
     if (!dataIsLoaded) return;
     yearMin = minYear;
     yearMax = maxYear;
+
+    // Update the Sankey diagram
     updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOfMovie, nbrOfTvShow);
+
+    // Update the choropleth map
+    updateChoroplethMap(countryAvailabilityData, yearMin, yearMax);
 }
 
 // Initialize the visualization when the window loads
