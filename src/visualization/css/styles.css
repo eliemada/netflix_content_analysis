@@ -57,10 +57,17 @@ html, body {
 }
 
 /* Adjust map and sankey layout */
-#map, #sankey {
+#sankey {
     width: 98%;
     height: 48%;
     background-color: rgb(255, 255, 255);
+    margin: 1%;
+}
+
+#map {
+    width: 98%;
+    height: 48%;
+    background-color: rgb(0, 0, 0);
     margin: 1%;
 }
 

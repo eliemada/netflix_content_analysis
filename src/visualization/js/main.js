@@ -19,7 +19,8 @@ async function createVisualization() {
         const {
             movieAndTvGenreCounts, // Updated from dataForSankey
             cleanedNetflixData, // Updated from parsedData
-            worldMapData: mapData
+            worldMapData: mapData,
+            countryAvailabilityData
         } = await loadData(); // Destructure the loaded data
         dataForSankey = movieAndTvGenreCounts; // Use the updated variable name
         worldMapData = mapData; // Assign world map data to a variable
@@ -41,8 +42,8 @@ async function createVisualization() {
         // Create the slider for the year range
         createSlider(yearMin, yearMax, updateDashboard);
 
-        // Create the choropleth map using world map data and Netflix data
-        createChoroplethMap(worldMapData, '#map');
+        // Create the choropleth map using world map data and availability data
+        createChoroplethMap(worldMapData, countryAvailabilityData, '#map');
 
     } catch (error) {
         console.error("Visualization could not be created:", error);
