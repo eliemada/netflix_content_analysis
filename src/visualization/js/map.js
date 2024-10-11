@@ -5,8 +5,11 @@ let availabilityByCountry = new Map();
 let colorScale;
 let countryNameCorrections;
 let legendGroup;
+let selectedCountry = null; // Add this variable to keep track of the selected country
+let tooltip; // Tooltip for country names
 
-export function createChoroplethMap(worldMapData, countryAvailabilityData, containerId, minYear, maxYear) {
+export function createChoroplethMap(worldMapData, countryAvailabilityData,containerId, minYear, maxYear) {
+
     // Clear previous choropleth map
     d3.select(containerId).selectAll("*").remove();
 
@@ -15,8 +18,21 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
     const width = container.node().getBoundingClientRect().width;
     const height = container.node().getBoundingClientRect().height;
 
+
+    tooltip = d3.select(containerId)
+        .append("div")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .style("background-color", "rgba(0,0,0,0.7)")
+        .style("color", "#fff")
+        .style("padding", "5px 10px")
+        .style("border-radius", "5px")
+        .style("font-family", "Arial, sans-serif")
+        .style("font-size", "12px")
+        .style("pointer-events", "none");
+
     // Set up margins
-    const margin = { top: 20, right: 20, bottom: 50, left: 20 };
+    const margin = {top: 20, right: 20, bottom: 50, left: 20};
 
     // Create SVG with a background color
     const svg = container
@@ -128,7 +144,7 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
         .interpolator(d3.interpolateReds);
 
 // **Check if colorScale is defined**
-    console.log("Color Scale:", colorScale);
+//     console.log("Color Scale:", colorScale);
     // Draw the map with data coloring
     pathSelection = mapGroup.selectAll("path")
         .data(filteredCountries.features)
@@ -148,7 +164,82 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
             }
         })
         .attr("stroke", "#fff")
-        .attr("stroke-width", 0.5);
+        .attr("stroke-width", 0.5)
+        // Add interactions
+        .on("mouseover", function (event, d) {
+            // Highlight the country on hover
+            d3.select(this)
+                .attr("stroke", "#FFD700") // Gold color
+                .attr("stroke-width", 2);
+
+            // Show tooltip with country name
+            let countryName = d.properties.name;
+            if (countryNameCorrections[countryName]) {
+                countryName = countryNameCorrections[countryName];
+            }
+            tooltip.style("visibility", "visible")
+                .text(countryName);
+        })
+        .on("mousemove", function (event) {
+            // Move the tooltip with the mouse
+            tooltip.style("top", (event.pageY - 10) + "px")
+                .style("left", (event.pageX + 10) + "px");
+        })
+        .on("mouseout", function (event, d) {
+            // Reset the style if it's not the selected country
+            if (selectedCountry !== this) {
+                d3.select(this)
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 0.5);
+            }
+            // Hide tooltip
+            tooltip.style("visibility", "hidden");
+        })
+        .on("click", function (event, d) {
+            // Deselect the currently selected country
+            if (selectedCountry && selectedCountry !== this) {
+                d3.select(selectedCountry)
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 0.5)
+                    .attr("stroke-dasharray", null)
+                    .attr("stroke-dashoffset", null)
+                    .interrupt(); // Stop ongoing animations
+            }
+            // Toggle selection
+            if (selectedCountry === this) {
+                // Deselect the country
+                d3.select(this)
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 0.5)
+                    .attr("stroke-dasharray", null)
+                    .attr("stroke-dashoffset", null)
+                    .interrupt();
+                selectedCountry = null;
+            } else {
+                // Select the country
+                selectedCountry = this;
+                d3.select(this)
+                    .attr("stroke", "#FFD700") // Gold color
+                    .attr("stroke-width", 0.75);
+                animateStroke(d3.select(this));
+            }
+        });
+
+    function animateStroke(selection) {
+        selection
+            .attr("stroke-dasharray", "5,5")
+            .attr("stroke-dashoffset", 0)
+            .transition()
+            .duration(1000)
+            .ease(d3.easeLinear)
+            .attr("stroke-dashoffset", 10)
+            .on("end", function () {
+                // Continue the animation if the country is still selected
+                if (selectedCountry === this) {
+                    animateStroke(selection);
+                }
+            });
+    }
 
     // **Add the legend**
     // Dimensions and positioning for the legend
@@ -175,7 +266,7 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
     const numStops = 10;
     const legendStops = d3.range(numStops).map(i => {
         const value = minAvailability + i * (maxAvailability - minAvailability) / (numStops - 1);
-        return { offset: (i / (numStops - 1) * 100) + "%", color: colorScale(value) };
+        return {offset: (i / (numStops - 1) * 100) + "%", color: colorScale(value)};
     });
 
     legendGradient.selectAll("stop")
@@ -334,7 +425,7 @@ export function updateChoroplethMap(countryAvailabilityData, minYear, maxYear) {
 
     const legendStops = d3.range(numStops).map(i => {
         const value = minAvailability + i * (maxAvailability - minAvailability) / (numStops - 1);
-        return { offset: (i / (numStops - 1) * 100) + "%", color: colorScale(value) };
+        return {offset: (i / (numStops - 1) * 100) + "%", color: colorScale(value)};
     });
 
     legendGradient.selectAll("stop")
