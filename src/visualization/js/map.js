@@ -8,7 +8,7 @@ let legendGroup;
 let selectedCountry = null; // Add this variable to keep track of the selected country
 let tooltip; // Tooltip for country names
 
-export function createChoroplethMap(worldMapData, countryAvailabilityData,containerId, minYear, maxYear) {
+export function createChoroplethMap(worldMapData, countryAvailabilityData, containerId, minYear, maxYear) {
 
     // Clear previous choropleth map
     d3.select(containerId).selectAll("*").remove();
@@ -17,6 +17,37 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData,contai
     const container = d3.select(containerId);
     const width = container.node().getBoundingClientRect().width;
     const height = container.node().getBoundingClientRect().height;
+
+
+    const zoomConfig = {
+        "North America": {scale: 2.8, translate: [-width / 3, -height / 2]},
+        "Europe": {scale: 6, translate: [-2.5 * width, -1.75 * height]},
+        "Asia": {scale: 2.8, translate: [-1.2 * width, -height / 1.5]},
+        "South America": {scale: 3, translate: [-width / 1.5, -1.5 * height]},
+        "Africa": {scale: 3.5, translate: [-1.25 * width, -1.4 * height]},
+        "Middle East": {scale: 6, translate: [-2.6 * width, -2.25 * height]},
+        "Oceania + Japan": {scale: 3.5, translate: [-1.85 * width, -1.75 * height]}
+    };
+
+    function zoomToRegion(region) {
+        const {scale, translate} = zoomConfig[region];
+
+        // Apply zoom transformation to the map
+        svg.transition()
+            .duration(750)
+            .call(
+                zoom.transform,
+                d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+            );
+    }
+
+    d3.select("#northAmerica").on("click", () => zoomToRegion("North America"));
+    d3.select("#europe").on("click", () => zoomToRegion("Europe"));
+    d3.select("#asia").on("click", () => zoomToRegion("Asia"));
+    d3.select("#southAmerica").on("click", () => zoomToRegion("South America"));
+    d3.select("#africa").on("click", () => zoomToRegion("Africa"));
+    d3.select("#middleEast").on("click", () => zoomToRegion("Middle East"));
+    d3.select("#oceaniaJapan").on("click", () => zoomToRegion("Oceania + Japan"));
 
 
     tooltip = d3.select(containerId)
