@@ -196,6 +196,10 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData,contai
             tooltip.style("visibility", "hidden");
         })
         .on("click", function (event, d) {
+            let countryName = d.properties.name;
+            if (countryNameCorrections[countryName]) {
+                countryName = countryNameCorrections[countryName];
+            }
             // Deselect the currently selected country
             if (selectedCountry && selectedCountry !== this) {
                 d3.select(selectedCountry)
@@ -216,6 +220,11 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData,contai
                     .interrupt();
                 selectedCountry = null;
             } else {
+                // // Emit a custom event with the country name
+                const event = new CustomEvent('countrySelected', {
+                    detail: { country: countryName}
+                });
+                document.dispatchEvent(event);
                 // Select the country
                 selectedCountry = this;
                 d3.select(this)

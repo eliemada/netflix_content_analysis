@@ -7,14 +7,16 @@ import { createChoroplethMap, updateChoroplethMap } from './map.js'; // Import t
 
 let dataForSankey;
 let worldMapData;
-let cleanedNetflixData;
+let cleanedNetflix;
 let countryAvailabilityData;
 let countByYearNetflixData;
+let movieCountryGenreAvailabilityData;
 let dataIsLoaded = false;
 let nbrOfMovie = 0;
 let nbrOfTvShow = 0;
 let yearMin = 2015;
 let yearMax = 2021;
+let selectedCountryForSankey = null;
 
 async function createVisualization() {
     try {
@@ -23,7 +25,8 @@ async function createVisualization() {
             cleanedNetflixData,
             worldMapData: mapData,
             countryAvailabilityData: availabilityData,
-            countByYearData: countByYear
+            countByYearData: countByYear,
+            movieCountryGenreAvailabilityData : movieCountryGenreAvailability
         } = await loadData();
 
         console.log("Data loaded successfully:", countByYear);
@@ -32,15 +35,8 @@ async function createVisualization() {
         worldMapData = mapData;
         countryAvailabilityData = availabilityData;
         countByYearNetflixData = countByYear;
-
-        // Count movies and TV shows
-        cleanedNetflixData.forEach(row => {
-            if (row.Series_or_Movie === "Movie") {
-                nbrOfMovie += 1;
-            } else {
-                nbrOfTvShow += 1;
-            }
-        });
+        cleanedNetflix = cleanedNetflixData;
+        movieCountryGenreAvailabilityData = movieCountryGenreAvailability;
 
         dataIsLoaded = true;
 
@@ -58,6 +54,13 @@ async function createVisualization() {
     }
 }
 
+// Listen for the countrySelected event
+document.addEventListener('countrySelected', function(event) {
+    selectedCountryForSankey = event.detail.country;
+    // If you want to trigger an update right after a country is selected:
+    updateSankeyDiagram(yearMin, yearMax, dataForSankey, countByYearNetflixData,movieCountryGenreAvailabilityData, selectedCountryForSankey);
+});
+
 
 function updateDashboard(minYear, maxYear) {
     if (!dataIsLoaded) return;
@@ -65,7 +68,7 @@ function updateDashboard(minYear, maxYear) {
     yearMax = maxYear;
 
     // Update the Sankey diagram
-    updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOfMovie, nbrOfTvShow, countByYearNetflixData);
+    updateSankeyDiagram(yearMin, yearMax, dataForSankey, countByYearNetflixData,movieCountryGenreAvailabilityData, selectedCountryForSankey);
 
     // Update the choropleth map
     updateChoroplethMap(countryAvailabilityData, yearMin, yearMax);

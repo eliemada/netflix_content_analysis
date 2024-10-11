@@ -8,15 +8,17 @@ export async function loadData() {
     const worldMapDataFile = "./src/dataset/countries-50m.json"; // The JSON file path for world map data
     const countryAvailabilityFile = "./src/dataset/pre_processing/all_content_country_availability.csv";
     const countByYearFile = "./src/dataset/pre_processing/count_by_year.csv";
+    const movieCountryGenreAvailabilityFile = "./src/dataset/pre_processing/movies_country_genre_availability_by_year.csv";
 
     try {
-        const [movieAndTvData, cleanedNetflixData, genrePercentagesData, worldMapData, countryAvailabilityData, countByYearData] = await Promise.all([
+        const [movieAndTvData, cleanedNetflixData, genrePercentagesData, worldMapData, countryAvailabilityData, countByYearData, movieCountryGenreAvailabilityData] = await Promise.all([
             Promise.all([d3.csv(movieGenreCountsFile), d3.csv(tvShowsGenreCountsFile)]),
             d3.csv(cleanedNetflixDataFile),
             d3.csv(genrePercentagesFile),
             d3.json(worldMapDataFile), // Load the JSON file
             d3.csv(countryAvailabilityFile), // Load the country availability CSV file
-            d3.csv(countByYearFile)
+            d3.csv(countByYearFile),
+            d3.csv(movieCountryGenreAvailabilityFile)
         ]);
 
 
@@ -26,7 +28,9 @@ export async function loadData() {
             genrePercentagesData: genrePercentagesData, // Genre percentages data
             worldMapData: worldMapData, // World map data from JSON
             countryAvailabilityData: countryAvailabilityData, // Include the country availability data
-            countByYearData: countByYearData
+            countByYearData: countByYearData,
+            movieCountryGenreAvailabilityData: movieCountryGenreAvailabilityData
+
         };
     } catch (error) {
         console.error("Error loading files:", error);

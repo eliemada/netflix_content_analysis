@@ -220,7 +220,8 @@ export function createSankeyDiagram(data, nbrOfMovie, nbrOfTvShow) {
 }
 
 
-export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOfMovie, nbrOfTvShow, countByYear) {
+
+export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, countByYear,movieCountryGenreAvailabilityData, selectedCountryForSankey) {
 
     var sankeyElement = document.getElementById("sankey");
 
@@ -251,6 +252,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
     countByYear.forEach(function (d) {
         var year = parseInt(d.Year);
         if (year >= yearMin && year <= yearMax) {
+            console.log(d)
             var movieValue = parseFloat(d.Movies_Count) || 0;
             var tvShowValue = parseFloat(d.TVShows_Count) || 0;
             otherValueMovie += movieValue;
@@ -258,18 +260,42 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
         }
     });
     
-    dataForSankey[0].forEach(function (d) {
-        var movieValue = 0;
-        for (var year = yearMin; year <= yearMax; year++) {
-            movieValue += parseFloat(d[String(year)]) || 0;
-        }
-        // var movieValue = parseFloat(d[String(yearMin)]);
-        nodes.push({"node": count, "name": d.Genre});
-        if (movieValue/otherValueMovie > 0.15) {
-            links.push({"source": 0, "target": count, "value": movieValue});
-        }
-        count += 1
-    })
+
+
+    function parseYear(dateString) {
+        // Split the date string by '/'
+        var parts = dateString.split('/');
+        // Return the year part (the third part)
+        return parseInt(parts[2], 10);
+    }
+
+    if(selectedCountryForSankey != null){
+    movieCountryGenreAvailabilityData.forEach(function (d) {   
+        console.log(selectedCountryForSankey) 
+        
+            if (d["Country Availability"] == selectedCountryForSankey) {
+                nodes.push({"node": count, "name": d.Genre});
+                links.push({"source": 0, "target": count, "value": parseFloat(d.Movies) || 0});
+                count += 1;
+            }
+        });
+    }else{
+            dataForSankey[0].forEach(function (d) {
+                var movieValue = 0;
+                for (var year = yearMin; year <= yearMax; year++) {
+                    movieValue += parseFloat(d[String(year)]) || 0;
+                }
+                // var movieValue = parseFloat(d[String(yearMin)]);
+                nodes.push({"node": count, "name": d.Genre});
+                if (movieValue/otherValueMovie > 0.15) {
+                    links.push({"source": 0, "target": count, "value": movieValue});
+                }
+                count += 1
+            }) 
+    }
+    
+
+
     count = 2;
     dataForSankey[1].forEach(function (d) {
         var TVshowValue = 0;
@@ -361,10 +387,6 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
             .style("opacity", 0);
         });
         
-    // Create a tooltip div
-    // var tooltip = d3.select("body").append("div")
-    //     .attr("class", "tooltip")
-    //     .style("opacity", 0);
 
     
     // add in the nodes
@@ -375,13 +397,16 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
         .attr("class", "node")
         .attr("transform", function (d) {
             return "translate(" + d.x0 + "," + d.y0 + ")";
-        })
-        .on("click", function (event, d) {
-            if (d.name == "Other") {
-                // Show hidden genres when "Other" is clicked
-                showHiddenGenres(event.pageX, event.pageY); // Pass mouse position for positioning
-            }
         });
+        // .on("click", function (event, d) {
+        //     console.log("Node clicked:", d.name);
+        //     if (d.name == "Other") {
+        //         console.log("Other clicked");
+        //         // Show hidden genres when "Other" is clicked
+        //         showHiddenGenres(event.pageX, event.pageY); // Pass mouse position for positioning
+        //     }
+        // });
+        
         
         // add the rectangles for the nodes
     node
@@ -402,6 +427,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
         .text(function (d) {
             return d.name + "\n" + "There is " + d.value + " stuff in this node";
         });
+
 
         // add in the title for the nodes
         node
@@ -443,22 +469,34 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, nbrOf
         .attr("text-anchor", "start");
         
     d3.select("#sankey").select("svg").remove();
-            // Add transitions to links and nodes
-    // link.transition()
-    // .duration(1000)
-    // .attr("d", d3.sankeyLinkHorizontal())
-    // .style("stroke-width", function (d) {
-    //     return Math.max(1, d.width);
-    // });
+    // Function to show hidden genres in a popup
+    function showHiddenGenres(x, y) {
+        const hiddenGenresContainer = d3.select("#hidden-genres");
+        hiddenGenresContainer.html(''); // Clear previous content
+        hiddenNodes = nodes.filter(d => !nodeHasLinks.has(d.node))
 
-    // node.select("rect").transition()
-    //     .duration(10000)
-    //     .attr("height", function (d) { return d.y1 - d.y0; })
-    //     .attr("width", sankey.nodeWidth());
+        hiddenNodes.forEach(hiddenNode => {
+            hiddenGenresContainer.append("div")
+                .text(hiddenNode.name)
+                .style("cursor", "pointer")
+                .on("click", function () {
+                    // Optional: Action on genre click
+                    console.log("Clicked on genre:", hiddenNode.name);
+                });
+        });
 
-    // node.select("text").transition()
-    //     .duration(10000)
-    //     .attr("x", -6)
-    //     .attr("y", function (d) { return (d.y1 - d.y0) / 2; });
+        // Position the container
+        hiddenGenresContainer.style("left", (x + 10) + "px") // Offset for visibility
+            .style("top", (y + 10) + "px") // Offset for visibility
+            .style("display", "block"); // Show the container
+    }
+
+    // Hide the genres container when clicking elsewhere
+    d3.select("body").on("click", function (event) {
+        const hiddenGenresContainer = d3.select("#hidden-genres");
+        if (!hiddenGenresContainer.node().contains(event.target)) {
+            hiddenGenresContainer.style("display", "none"); // Hide if clicked outside
+        }
+    });
 
 }
