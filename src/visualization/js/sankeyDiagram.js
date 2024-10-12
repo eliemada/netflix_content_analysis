@@ -1,6 +1,7 @@
 
-const color = d3.scaleOrdinal(d3.schemeCategory10);
-
+const color = d3.scaleOrdinal(d3.schemeDark2);
+// const color = d3.scaleOrdinal(d3.schemePaired);
+// const color = d3.scaleOrdinal(d3.schemeSet3);
 export function createSankeyDiagram(data, nbrOfMovie, nbrOfTvShow) {
 
     var sankeyElement = document.getElementById("sankey");
@@ -221,7 +222,7 @@ export function createSankeyDiagram(data, nbrOfMovie, nbrOfTvShow) {
 
 
 
-export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, countByYear,movieCountryGenreAvailabilityData, selectedCountryForSankey) {
+export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, countByYear,countByYearandCoutryNetflixData,movieCountryGenreAvailabilityData,serieCountryGenreAvailabilityData, selectedCountryForSankey) {
 
     var sankeyElement = document.getElementById("sankey");
 
@@ -241,73 +242,149 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         .append("g");
         
         
-        var nodes = [{"node": 0, "name": "Movies"}, {"node": 1, "name": "TV shows"}];
+    var nodes = [{"node": 0, "name": "Movies"}, {"node": 1, "name": "TV shows"}];
     var hiddenNodes = []
     var links = []
     var hiddenLinks = []
     var count = 2
     var otherValueMovie = 0
     var otherValueTVshow = 0
+    var totalValueMovie = 0
+    var totalValueTVshow = 0
     
-    countByYear.forEach(function (d) {
-        var year = parseInt(d.Year);
-        if (year >= yearMin && year <= yearMax) {
-            console.log(d)
-            var movieValue = parseFloat(d.Movies_Count) || 0;
-            var tvShowValue = parseFloat(d.TVShows_Count) || 0;
-            otherValueMovie += movieValue;
-            otherValueTVshow += tvShowValue;
-        }
-    });
-    
+    console.log("selectedCountryForSankey", selectedCountryForSankey);  
 
-
-    function parseYear(dateString) {
-        // Split the date string by '/'
-        var parts = dateString.split('/');
-        // Return the year part (the third part)
-        return parseInt(parts[2], 10);
-    }
-
-    if(selectedCountryForSankey != null){
-    movieCountryGenreAvailabilityData.forEach(function (d) {   
-        console.log(selectedCountryForSankey) 
-        
-            if (d["Country Availability"] == selectedCountryForSankey) {
-                nodes.push({"node": count, "name": d.Genre});
-                links.push({"source": 0, "target": count, "value": parseFloat(d.Movies) || 0});
-                count += 1;
+    if(selectedCountryForSankey != null) {
+        var filteredData = countByYearandCoutryNetflixData.filter(function(d) {
+            return d["Country_Availability"] == selectedCountryForSankey;
+        });
+        console.log("countByYearandCoutryNetflixData", filteredData);
+        filteredData.forEach(function(d) {
+            var year = parseInt(d["Year"]);
+            
+            if (year >= yearMin && year <= yearMax) {
+                var movieValue = parseFloat(d.Movies_Count);
+                var tvShowValue = parseFloat(d.TVShows_Count);
+                totalValueMovie += movieValue;
+                totalValueTVshow += tvShowValue;
             }
         });
-    }else{
-            dataForSankey[0].forEach(function (d) {
-                var movieValue = 0;
-                for (var year = yearMin; year <= yearMax; year++) {
-                    movieValue += parseFloat(d[String(year)]) || 0;
-                }
-                // var movieValue = parseFloat(d[String(yearMin)]);
-                nodes.push({"node": count, "name": d.Genre});
-                if (movieValue/otherValueMovie > 0.15) {
-                    links.push({"source": 0, "target": count, "value": movieValue});
-                }
-                count += 1
-            }) 
+    }else {
+        countByYear.forEach(function (d) {
+        var year = parseInt(d.Year);
+        if (year >= yearMin && year <= yearMax) {
+            var movieValue = parseFloat(d.Movies_Count) || 0;
+            var tvShowValue = parseFloat(d.TVShows_Count) || 0;
+            totalValueMovie += movieValue;
+            totalValueTVshow += tvShowValue;
+            }
+        });
     }
+    console.log("totalValueMovie", totalValueMovie, totalValueTVshow);
+    //add the nodes for movies
+    if (selectedCountryForSankey != null) {
+        otherValueMovie = 0;    
+        otherValueTVshow = 0;
+        // Filter data for the selected country
+        var filteredData = movieCountryGenreAvailabilityData.filter(function(d) {
+            return d["Country_Availability"] == selectedCountryForSankey;
+        });
+        console.log("movieCountryGenreAvailabilityData", filteredData);
     
-
-
+        // Aggregate data by genre for the specified year range
+        var aggregatedData = {};
+        filteredData.forEach(function(d) {
+            var year = parseInt(d["Year"]);
+            if (year >= yearMin && year <= yearMax) {
+                Object.keys(d).forEach(function(key) {
+                    if (key != "Country_Availability" && key != "Year") {
+                        var genreValue = parseFloat(d[key]) || 0;
+                        if (!aggregatedData[key]) {
+                            aggregatedData[key] = 0;
+                        }
+                        otherValueMovie += genreValue;
+                        aggregatedData[key] += genreValue;
+                    }
+                });
+            }
+        });
+        console.log("aggregatedData", aggregatedData);
+        // Add the aggregated data to the nodes and links
+        Object.keys(aggregatedData).forEach(function(key) {
+            var genreValue = aggregatedData[key];
+            nodes.push({"node": count, "name": key});
+            console.log("genreValue", genreValue, totalValueMovie, genreValue/totalValueMovie);
+            if (genreValue/totalValueMovie > 0.05) {
+                links.push({"source": 0, "target": nodes.findIndex(node => node.name === key), "value": genreValue});
+            }
+            count += 1;
+        });
+    } else {
+        dataForSankey[0].forEach(function(d) {
+            var movieValue = 0;
+            for (var year = yearMin; year <= yearMax; year++) {
+                movieValue += parseFloat(d[String(year)]) || 0;
+            }
+            nodes.push({"node": count, "name": d.Genre});
+            if (movieValue / totalValueTVshow > 0.15) {
+                links.push({"source": 0, "target": nodes.findIndex(node => node.name === d.Genre), "value": movieValue});
+            }
+            count += 1;
+        });
+    }
+    console.log("nodes", nodes);
+    //add the nodes and links for TV shows
     count = 2;
+    if (selectedCountryForSankey != null) {
+        otherValueTVshow = 0;
+        otherValueTVshow = 0;
+        // Filter data for the selected country
+        var filteredData = serieCountryGenreAvailabilityData.filter(function(d) {
+            return d["Country_Availability"] == selectedCountryForSankey;
+        });
+        console.log("serieCountryGenreAvailabilityData", filteredData);
+
+        // Aggregate data by genre for the specified year range
+        var aggregatedData = {};
+        filteredData.forEach(function(d) {
+            var year = parseInt(d["Year"]);
+            if (year >= yearMin && year <= yearMax) {
+                Object.keys(d).forEach(function(key) {
+                    if (key != "Country_Availability" && key != "Year") {
+                        var genreValue = parseFloat(d[key]) || 0;
+                        if (!aggregatedData[key]) {
+                            aggregatedData[key] = 0;
+                        }
+                        otherValueTVshow += genreValue;
+                        aggregatedData[key] += genreValue;
+                    }
+                });
+            }
+        });
+        console.log("aggregatedData", aggregatedData);
+        // Add the aggregated data to the nodes and links
+        Object.keys(aggregatedData).forEach(function(key) {
+            var genreValue = aggregatedData[key];
+            if (nodes.findIndex(node => node.name === key) == -1) {
+                nodes.push({"node": count, "name": key});
+            }
+            if (genreValue/totalValueTVshow > 0.05) {
+                links.push({"source": 1, "target": nodes.findIndex(node => node.name === key), "value": genreValue});
+            }
+            count += 1;
+        });
+    } else {
     dataForSankey[1].forEach(function (d) {
         var TVshowValue = 0;
         for (var year = yearMin; year <= yearMax; year++) {
             TVshowValue += parseFloat(d[String(year)]) || 0;
         }
-        if (TVshowValue/otherValueTVshow > 0.15) {
-            links.push({"source": 1, "target": count, "value": TVshowValue});
+        if (TVshowValue/totalValueTVshow > 0.15) {
+            links.push({"source": 1, "target": nodes.findIndex(node => node.name === d.Genre), "value": TVshowValue});
         }
         count += 1
     });
-
+    }
 
 
 
@@ -353,6 +430,8 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
     .style("border", "1px solid #ccc")
     .style("padding", "10px")
     .style("border-radius", "4px")
+    .style("font-size", "14px")
+    .style("font-family", "Netflix_font")
     .style("box-shadow", "0px 0px 10px rgba(0, 0, 0, 0.1)");
     
     // add in the links
@@ -424,6 +503,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         })
         // Add hover text
         .append("title")
+        .style("font-family", "Netflix_font")
         .text(function (d) {
             return d.name + "\n" + "There is " + d.value + " stuff in this node";
         });
@@ -442,13 +522,20 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         .attr("dy", ".35em")
         .attr("text-anchor", "end")
         .attr("transform", null)
+        .style("font-family", "Netflix_font")
         .text(function (d) {
             return d.name
         })
         .attr("text-anchor", "start");
-
-    node
+    
+        node
         .filter(d => nodeHasLinks.has(d.node))
+        .filter(function (d) {
+            // Check if the node is big enough to hold the text
+            const nodeHeight = d.y1 - d.y0;
+            const minHeightThreshold = 40; // Set a minimum height threshold
+            return nodeHeight > minHeightThreshold;
+        })
         .append("text")
         .attr("x", function (d) {
             return d.dx / 5;
@@ -459,12 +546,15 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         .attr("dy", ".35em")
         .attr("text-anchor", "end")
         .attr("transform", null)
+        .style("font-family", "Netflix_font")
         .text(function (d) {
             if (d.node == 0) {
-                return otherValueMovie
+                return totalValueMovie;
             } else if (d.node == 1) {
-                return otherValueTVshow
-            } else return d.value
+                return totalValueTVshow;
+            } else {
+                return d.value;
+            }
         })
         .attr("text-anchor", "start");
         

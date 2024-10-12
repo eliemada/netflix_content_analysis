@@ -250,6 +250,10 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
                     .attr("stroke-dashoffset", null)
                     .interrupt();
                 selectedCountry = null;
+                const deselectEvent = new CustomEvent('countryDeselected', {
+                    detail: { country: countryName }
+                });
+                document.dispatchEvent(deselectEvent);
             } else {
                 // // Emit a custom event with the country name
                 const event = new CustomEvent('countrySelected', {
