@@ -69,7 +69,10 @@ html, body {
     height: 48%;
     background-color: rgb(0, 0, 0);
     margin: 1%;
+    border-radius: 10px; /* This ensures the corners of the map are rounded */
+    overflow: hidden; /* This ensures that the SVG inside respects the border radius */
 }
+
 
 /* Images inside map, zoomIn, yourTop should scale to fit their containers */
 #map img, #zoomIn img, #yourTop img {
@@ -114,25 +117,71 @@ html, body {
 .noUi-base {
     background-color: #ffffff; /* Change the background color of the track */
 }
-
 #zoomIn {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 30% 30% 30%; /* Specific column widths */
+    grid-template-rows: auto auto auto; /* Allow rows to adjust based on content */
+    gap: 5px; /* Reduce gap between items */
+    width: 96%;
+    margin: 1%;
     padding: 10px;
+    justify-items: center;
 }
 
+/* Positioning buttons according to a world map */
+#northAmerica {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#southAmerica {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#europe {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#africa {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+#middleEast {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+#asia {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+#oceaniaJapan {
+    grid-column: 3;
+    grid-row: 3;
+}
+
+/* Button styles */
 #zoomIn button {
     background-color: #444;
     color: white;
-    padding: 10px 20px;
+    padding: 15px 25px;
     font-family: 'Netflix_font';
-    font-size: 16px;
+    font-size: 18px;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 #zoomIn button:hover {
     background-color: #ff0000;
+    transform: scale(1.05);
 }
+
+
+
