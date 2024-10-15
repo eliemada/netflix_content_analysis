@@ -119,7 +119,10 @@ html, body {
 
 #yourTop {
     height: 74%;
+    border: 1px solid red; /* Adds a red border */
+    border-radius: 10px;   /* Adds a border radius of 10px */
 }
+
 
 /* Slider styling */
 #slider {
