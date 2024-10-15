@@ -18,12 +18,14 @@
 <body onload="createVisualization()">
 <div id="topBar">
     Netflix around the world from 2015 to 2021
+    <button id="Home" onclick="window.location.href = window.location.href;" class="topbar-btn">Home</button>
+    <button id="TV Shows" class="topbar-btn">TV Shows</button>
+    <button id="Movies" class="topbar-btn">Movies</button>
     <div id="slider"></div>
 </div>
 <div id="dashboard">
     <div id="leftSide">
         <div id="map">
-<!--            <img src="src/images/IMG_1107.JPEG" alt="map">-->
         </div>
         <div id="sankey"></div>
     </div>
@@ -42,6 +44,6 @@
         </div>
     </div>
 </div>
-<div id="hidden-genres" style="display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 10px;"></div>
 </body>
 </html>
+

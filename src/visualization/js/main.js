@@ -4,6 +4,7 @@ import { loadData } from './dataLoader.js';
 import { createSankeyDiagram, updateSankeyDiagram } from './sankeyDiagram.js';
 import { createSlider } from './slider.js';
 import { createChoroplethMap, updateChoroplethMap } from './map.js'; // Import the update function
+// import { createList, updateList } from './list.js';
 
 let dataForSankey;
 let worldMapData;
@@ -45,16 +46,21 @@ async function createVisualization() {
         movieCountryGenreAvailabilityData = movieCountryGenreAvailability;
         serieCountryGenreAvailabilityData = serieCountryGenreAvailability;
 
+        yearMin= 2015;
+        yearMax= 2021;
+
         dataIsLoaded = true;
 
         // **Create the choropleth map first**
         createChoroplethMap(worldMapData, countryAvailabilityData, '#map', yearMin, yearMax);
 
         // Create the Sankey diagram
-        createSankeyDiagram(dataForSankey, nbrOfMovie, nbrOfTvShow);
+        createSankeyDiagram(2015, 2021, dataForSankey, countByYearNetflixData,countByYearandCoutryNetflixData,movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData);
 
         // Create the slider for the year range
         createSlider(yearMin, yearMax, updateDashboard);
+
+        createList('#yourTop', ["Top 10 Movies", "Top 10 TV Shows"]);
 
     } catch (error) {
         console.error("Visualization could not be created:", error);
@@ -85,7 +91,9 @@ function updateDashboard(minYear, maxYear) {
 
     // Update the choropleth map
     updateChoroplethMap(countryAvailabilityData, yearMin, yearMax);
+
+    updateList('#yourTop', ["Top 10 Movies", "Top 10 TV Shows"]);
 }
 
 // Initialize the visualization when the window loads
-window.onload = createVisualization;
+window.onload = createVisualization();

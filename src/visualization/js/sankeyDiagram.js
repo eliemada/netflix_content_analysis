@@ -252,13 +252,10 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
     var totalValueMovie = 0
     var totalValueTVshow = 0
     
-    console.log("selectedCountryForSankey", selectedCountryForSankey);  
-
     if(selectedCountryForSankey != null) {
         var filteredData = countByYearandCoutryNetflixData.filter(function(d) {
             return d["Country_Availability"] == selectedCountryForSankey;
         });
-        console.log("countByYearandCoutryNetflixData", filteredData);
         filteredData.forEach(function(d) {
             var year = parseInt(d["Year"]);
             
@@ -280,7 +277,6 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
             }
         });
     }
-    console.log("totalValueMovie", totalValueMovie, totalValueTVshow);
     //add the nodes for movies
     if (selectedCountryForSankey != null) {
         otherValueMovie = 0;    
@@ -289,7 +285,6 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         var filteredData = movieCountryGenreAvailabilityData.filter(function(d) {
             return d["Country_Availability"] == selectedCountryForSankey;
         });
-        console.log("movieCountryGenreAvailabilityData", filteredData);
     
         // Aggregate data by genre for the specified year range
         var aggregatedData = {};
@@ -308,12 +303,10 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
                 });
             }
         });
-        console.log("aggregatedData", aggregatedData);
         // Add the aggregated data to the nodes and links
         Object.keys(aggregatedData).forEach(function(key) {
             var genreValue = aggregatedData[key];
             nodes.push({"node": count, "name": key});
-            console.log("genreValue", genreValue, totalValueMovie, genreValue/totalValueMovie);
             if (genreValue/totalValueMovie > 0.05) {
                 links.push({"source": 0, "target": nodes.findIndex(node => node.name === key), "value": genreValue});
             }
@@ -342,7 +335,6 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         var filteredData = serieCountryGenreAvailabilityData.filter(function(d) {
             return d["Country_Availability"] == selectedCountryForSankey;
         });
-        console.log("serieCountryGenreAvailabilityData", filteredData);
 
         // Aggregate data by genre for the specified year range
         var aggregatedData = {};
@@ -361,7 +353,6 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
                 });
             }
         });
-        console.log("aggregatedData", aggregatedData);
         // Add the aggregated data to the nodes and links
         Object.keys(aggregatedData).forEach(function(key) {
             var genreValue = aggregatedData[key];
@@ -560,33 +551,33 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         
     d3.select("#sankey").select("svg").remove();
     // Function to show hidden genres in a popup
-    function showHiddenGenres(x, y) {
-        const hiddenGenresContainer = d3.select("#hidden-genres");
-        hiddenGenresContainer.html(''); // Clear previous content
-        hiddenNodes = nodes.filter(d => !nodeHasLinks.has(d.node))
+    // function showHiddenGenres(x, y) {
+    //     const hiddenGenresContainer = d3.select("#hidden-genres");
+    //     hiddenGenresContainer.html(''); // Clear previous content
+    //     hiddenNodes = nodes.filter(d => !nodeHasLinks.has(d.node))
 
-        hiddenNodes.forEach(hiddenNode => {
-            hiddenGenresContainer.append("div")
-                .text(hiddenNode.name)
-                .style("cursor", "pointer")
-                .on("click", function () {
-                    // Optional: Action on genre click
-                    console.log("Clicked on genre:", hiddenNode.name);
-                });
-        });
+    //     hiddenNodes.forEach(hiddenNode => {
+    //         hiddenGenresContainer.append("div")
+    //             .text(hiddenNode.name)
+    //             .style("cursor", "pointer")
+    //             .on("click", function () {
+    //                 // Optional: Action on genre click
+    //                 console.log("Clicked on genre:", hiddenNode.name);
+    //             });
+    //     });
 
-        // Position the container
-        hiddenGenresContainer.style("left", (x + 10) + "px") // Offset for visibility
-            .style("top", (y + 10) + "px") // Offset for visibility
-            .style("display", "block"); // Show the container
-    }
+    //     // Position the container
+    //     hiddenGenresContainer.style("left", (x + 10) + "px") // Offset for visibility
+    //         .style("top", (y + 10) + "px") // Offset for visibility
+    //         .style("display", "block"); // Show the container
+    // }
 
-    // Hide the genres container when clicking elsewhere
-    d3.select("body").on("click", function (event) {
-        const hiddenGenresContainer = d3.select("#hidden-genres");
-        if (!hiddenGenresContainer.node().contains(event.target)) {
-            hiddenGenresContainer.style("display", "none"); // Hide if clicked outside
-        }
-    });
+    // // Hide the genres container when clicking elsewhere
+    // d3.select("body").on("click", function (event) {
+    //     const hiddenGenresContainer = d3.select("#hidden-genres");
+    //     if (!hiddenGenresContainer.node().contains(event.target)) {
+    //         hiddenGenresContainer.style("display", "none"); // Hide if clicked outside
+    //     }
+    // });
 
 }
