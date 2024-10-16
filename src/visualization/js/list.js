@@ -58,17 +58,50 @@ export function createList(data, minYear, maxYear) {
         updateTable();
     });
 
-    // Create the + and - buttons
+    // Create the + and - buttons with updated styles
     filters.append('button')
         .attr('id', 'add-line')
         .text('+')
         .style('margin-right', '5px')
-        .style('padding', '5px 10px');
+        // Remove existing padding
+        .style('padding', '5px 10px')
+        // Apply new styles
+        .style('background-color', '#444')
+        .style('color', 'white')
+        .style('font-family', 'Netflix_font')
+        .style('font-size', '18px')
+        .style('border', 'none')
+        .style('border-radius', '10px')
+        .style('cursor', 'pointer')
+        .style('transition', 'background-color 0.3s ease')
+        .style('box-shadow', '0 4px 8px rgba(0, 0, 0, 0.2)')
+        // Change hover effect to red
+        .on('mouseover', function() {
+            d3.select(this).style('background-color', 'red');
+        })
+        .on('mouseout', function() {
+            d3.select(this).style('background-color', '#444');
+        });
 
     filters.append('button')
         .attr('id', 'remove-line')
         .text('-')
-        .style('padding', '5px 10px');
+         .style('padding', '5px 10px')
+        .style('background-color', '#444')
+        .style('color', 'white')
+        .style('font-family', 'Netflix_font')
+        .style('font-size', '18px')
+        .style('border', 'none')
+        .style('border-radius', '10px')
+        .style('cursor', 'pointer')
+        .style('transition', 'background-color 0.3s ease')
+        .style('box-shadow', '0 4px 8px rgba(0, 0, 0, 0.2)')
+        .on('mouseover', function() {
+            d3.select(this).style('background-color', 'red');
+        })
+        .on('mouseout', function() {
+            d3.select(this).style('background-color', '#444');
+        });
 
     // Create a wrapper div for the table to handle scrolling
     const tableWrapper = container.append('div')
@@ -76,7 +109,7 @@ export function createList(data, minYear, maxYear) {
         .style('width', '100%')
         .style('overflow-y', 'auto')
         .style('max-height', '400px')
-        .style('margin', '0 auto'); // Center the table wrapper
+        .style('margin', '0 auto') // Center the table wrapper
 
     // Create the table
     const table = tableWrapper.append('table')
@@ -99,9 +132,9 @@ export function createList(data, minYear, maxYear) {
         .style('background-color', '#444')
         .style('text-align', 'center')  // Center align headers
         .style('width', (d, i) => {
-            if (i === 0) return '15%'; // Image column
+            if (i === 0) return '8%'; // Image column, reduced width
             else if (i === 3) return '30%'; // Metrics column
-            else return '27.5%'; // Other columns
+            else return '31%'; // Other columns
         });
 
     // Create tbody
@@ -204,13 +237,40 @@ function updateTable() {
         .style('border', '1px solid #ddd')
         .style('padding', '8px')
         .text(d => truncateText(d.Title, 25)); // Truncate title
-
+    var tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
+        .style("position", "absolute")
+        .style("background-color", "white")
+        .style("border", "1px solid #ccc")
+        .style("padding", "10px")
+        .style("border-radius", "4px")
+        .style("font-size", "14px")
+        .style("font-family", "Netflix_font")
+        .style("box-shadow", "0px 0px 10px rgba(0, 0, 0, 0.1)");
     // Actors cell
     newRows.append('td')
         .attr('class', 'actors-cell')
         .style('border', '1px solid #ddd')
         .style('padding', '8px')
-        .text(d => truncateText(d.Actors, 25)); // Truncate actors if needed
+        .text(d => truncateText(d.Actors, 25)) // Truncate actors if needed
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+            // Show tooltip with full actors list
+            tooltip.transition()
+                .duration(200)
+                .style('opacity', 0.9);
+
+            tooltip.html(`<strong>Actors:</strong> ${d.Actors}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 28) + 'px');
+        })
+        .on('mouseout', function() {
+            // Hide tooltip
+            tooltip.transition()
+                .duration(500)
+                .style('opacity', 0);
+        });
 
     // Metrics cell - Small multiple bar chart
     newRows.append('td')
