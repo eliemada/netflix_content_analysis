@@ -25,7 +25,8 @@ export function createList(data, minYear, maxYear) {
 
     // Add the title
     titleElement = container.append('h2')
-        .style('text-align', 'center');
+        .style('text-align', 'center')
+        .style('margin', '10px 0 5px 0'); // Adjust the top and bottom margins
     // container.append('h2')
     //     .text('YOUR TOP')
     //     .style('text-align', 'center');
@@ -39,7 +40,7 @@ export function createList(data, minYear, maxYear) {
         .style('display', 'flex')
         .style('align-items', 'center')
         .style('justify-content', 'center')
-        .style('margin-bottom', '20px');
+        .style('margin-bottom', '10px');
 
     // Create the Type filter
     filters.append('label')
@@ -114,7 +115,7 @@ export function createList(data, minYear, maxYear) {
         .attr('id', 'table-wrapper')
         .style('width', '100%')
         .style('overflow-y', 'auto')
-        .style('max-height', '400px')
+        .style('max-height', '520px')
         .style('margin', '0 auto') // Center the table wrapper
 
     // Create the table
