@@ -8,7 +8,7 @@ const maxLines = 15;
 const minLines = 3;
 let typeFilter = 'All';
 let selectedCountryGlobal = null;
-
+let titleElement;
 // Function to create the list UI
 export function createList(data, minYear, maxYear) {
     cleanedNetflixData = data;
@@ -24,9 +24,14 @@ export function createList(data, minYear, maxYear) {
     container.selectAll('*').remove();
 
     // Add the title
-    container.append('h2')
-        .text('YOUR TOP')
+    titleElement = container.append('h2')
         .style('text-align', 'center');
+    // container.append('h2')
+    //     .text('YOUR TOP')
+    //     .style('text-align', 'center');
+
+    updateTitle(); // Call the function to set the initial title
+
 
     // Create the filters container
     const filters = container.append('div')
@@ -56,6 +61,7 @@ export function createList(data, minYear, maxYear) {
     typeSelect.on('change', function() {
         typeFilter = this.value;
         updateTable();
+        updateTitle()
     });
 
     // Create the + and - buttons with updated styles
@@ -148,6 +154,7 @@ export function createList(data, minYear, maxYear) {
         if (numLines < maxLines) {
             numLines++;
             updateTable();
+            updateTitle();
         }
     });
 
@@ -155,6 +162,7 @@ export function createList(data, minYear, maxYear) {
         if (numLines > minLines) {
             numLines--;
             updateTable();
+            updateTitle(); // Update the title when numLines changes
         }
     });
 }
@@ -306,18 +314,31 @@ function updateTable() {
         });
 }
 
+function updateTitle() {
+    // Map 'All' to 'Titles' for the title
+    const typeMapping = {
+        'All': 'Titles',
+        'Movie': 'Movies',
+        'TV Show': 'Series'
+    };
+
+    const typeText = typeMapping[typeFilter] || 'Titles';
+
+    // Update the title text
+    titleElement.text(`YOUR TOP ${numLines} ${typeText.toUpperCase()}`);
+}
 // Function to create the bar chart for each row
 function createBarChart(d, cell) {
     // Data for the bar chart
     const chartData = [
-        { label: 'Score', value: +d.Average_Score },
+        { label: 'Score', value:  Math.round(+d.Average_Score) },
         { label: 'Countries', value: d.Country_Availability.split(',').length },
         { label: 'Languages', value: d.Languages.split(',').length }
     ];
 
     const maxValue = d3.max(chartData, d => d.value);
 
-    const svgWidth = 140;
+    const svgWidth = 180;
     const svgHeight = 50;
     const barHeight = 10;
     const barPadding = 5;
@@ -334,7 +355,7 @@ function createBarChart(d, cell) {
 
     const xScale = d3.scaleLinear()
         .domain([0, maxValue])
-        .range([0, svgWidth - 60]); // Leave space for labels
+        .range([0, svgWidth - 80]); // Leave space for labels
 
     const barGroup = svg.selectAll('.bar-group')
         .data(chartData)
@@ -377,7 +398,7 @@ function showBarChartModal(d) {
 
     // Data for the bar chart
     const chartData = [
-        { label: 'Score', value: +d.Average_Score },
+        { label: 'Score', value:  Math.round(+d.Average_Score) },
         { label: 'Countries', value: d.Country_Availability.split(',').length },
         { label: 'Languages', value: d.Languages.split(',').length }
     ];
