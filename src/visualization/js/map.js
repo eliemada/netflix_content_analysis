@@ -50,7 +50,7 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
     d3.select("#oceaniaJapan").on("click", () => zoomToRegion("Oceania + Japan"));
 
 
-    tooltip = d3.select("body").append("div")
+    tooltip = d3.select("#map").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0)
         .style("position", "absolute")

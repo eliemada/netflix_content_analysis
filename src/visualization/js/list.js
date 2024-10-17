@@ -246,7 +246,7 @@ function updateTable() {
         .style('border', '1px solid #ddd')
         .style('padding', '8px')
         .text(d => truncateText(d.Title, 25)); // Truncate title
-    var tooltip = d3.select("body").append("div")
+    var tooltip = d3.select("#yourTop").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0)
         .style("position", "absolute")

@@ -359,8 +359,9 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
             if (nodes.findIndex(node => node.name === key) == -1) {
                 nodes.push({"node": count, "name": key});
             }
-            if (genreValue/totalValueTVshow > 0.05) {
-                links.push({"source": 1, "target": nodes.findIndex(node => node.name === key), "value": genreValue});
+            const targetIndex = nodes.findIndex(node => node.name === key);
+            if (genreValue/totalValueTVshow > 0.05 || links.some(link => link.target === targetIndex)) {
+                    links.push({"source": 1, "target": targetIndex, "value": genreValue});
             }
             count += 1;
         });
@@ -370,14 +371,13 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         for (var year = yearMin; year <= yearMax; year++) {
             TVshowValue += parseFloat(d[String(year)]) || 0;
         }
-        if (TVshowValue/totalValueTVshow > 0.15) {
+        const targetIndex = nodes.findIndex(node => node.name === d.Genre);
+        if (TVshowValue/totalValueTVshow > 0.15 || links.some(link => link.target === targetIndex)) {
             links.push({"source": 1, "target": nodes.findIndex(node => node.name === d.Genre), "value": TVshowValue});
         }
         count += 1
     });
     }
-
-
 
     nodes.push({"node": count, "name": "Other"})
     links.push({"source": 0, "target": count, "value": otherValueMovie});
@@ -413,7 +413,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         }
     });
     
-    var tooltip = d3.select("body").append("div")
+    var tooltip = d3.select("#map").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0)
     .style("position", "absolute")
@@ -468,14 +468,6 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         .attr("transform", function (d) {
             return "translate(" + d.x0 + "," + d.y0 + ")";
         });
-        // .on("click", function (event, d) {
-        //     console.log("Node clicked:", d.name);
-        //     if (d.name == "Other") {
-        //         console.log("Other clicked");
-        //         // Show hidden genres when "Other" is clicked
-        //         showHiddenGenres(event.pageX, event.pageY); // Pass mouse position for positioning
-        //     }
-        // });
         
         
         // add the rectangles for the nodes
@@ -550,34 +542,5 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         .attr("text-anchor", "start");
         
     d3.select("#sankey").select("svg").remove();
-    // Function to show hidden genres in a popup
-    // function showHiddenGenres(x, y) {
-    //     const hiddenGenresContainer = d3.select("#hidden-genres");
-    //     hiddenGenresContainer.html(''); // Clear previous content
-    //     hiddenNodes = nodes.filter(d => !nodeHasLinks.has(d.node))
-
-    //     hiddenNodes.forEach(hiddenNode => {
-    //         hiddenGenresContainer.append("div")
-    //             .text(hiddenNode.name)
-    //             .style("cursor", "pointer")
-    //             .on("click", function () {
-    //                 // Optional: Action on genre click
-    //                 console.log("Clicked on genre:", hiddenNode.name);
-    //             });
-    //     });
-
-    //     // Position the container
-    //     hiddenGenresContainer.style("left", (x + 10) + "px") // Offset for visibility
-    //         .style("top", (y + 10) + "px") // Offset for visibility
-    //         .style("display", "block"); // Show the container
-    // }
-
-    // // Hide the genres container when clicking elsewhere
-    // d3.select("body").on("click", function (event) {
-    //     const hiddenGenresContainer = d3.select("#hidden-genres");
-    //     if (!hiddenGenresContainer.node().contains(event.target)) {
-    //         hiddenGenresContainer.style("display", "none"); // Hide if clicked outside
-    //     }
-    // });
 
 }
