@@ -72,6 +72,7 @@ html, body {
     justify-content: space-between;
 }
 
+
 /* Right side layout, taking 45% of the width */
 #rightSide {
     width: 45%;
@@ -79,7 +80,7 @@ html, body {
     background-color: black;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    /*justify-content: space-between;*/
 }
 
 /* Adjust map and sankey layout */
@@ -114,11 +115,11 @@ html, body {
 }
 
 #zoomIn {
-    height: 24%;
-}
-
-#yourTop {
-    height: 74%;
+    /*height: 6%;*/
+    display: flex;                  /* Arrange buttons horizontally */
+    flex-wrap: wrap;                /* Allow wrapping if needed on smaller screens */
+    justify-content: center;        /* Center the buttons within the container */
+    margin: 20px 0;                 /* Add vertical spacing */
 }
 
 /* Slider styling */
@@ -143,16 +144,7 @@ html, body {
 .noUi-base {
     background-color: #ffffff; /* Change the background color of the track */
 }
-#zoomIn {
-    display: grid;
-    grid-template-columns: 30% 30% 30%; /* Specific column widths */
-    grid-template-rows: auto auto auto; /* Allow rows to adjust based on content */
-    gap: 5px; /* Reduce gap between items */
-    width: 96%;
-    margin: 1%;
-    padding: 10px;
-    justify-items: center;
-}
+
 
 /* Positioning buttons according to a world map */
 #northAmerica {
@@ -194,14 +186,19 @@ html, body {
 #zoomIn button {
     background-color: #444;
     color: white;
-    padding: 15px 25px;
+    padding: 2px 5px;             /* Reduced vertical padding */
     font-family: 'Netflix_font';
-    font-size: 18px;
+    font-size: 12px;              /* Reduced font size */
     border: none;
-    border-radius: 10px;
+    border-radius: 3px;           /* Adjusted border radius */
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Slightly reduced shadow */
+    margin: 3px;                  /* Reduced margin between buttons */
+    width: 80px;                  /* Same width for all buttons */
+    text-align: center;           /* Center text */
+    line-height: 1;
+    height: 40px/* Adjust line height if necessary */
 }
 
 #zoomIn button:hover {

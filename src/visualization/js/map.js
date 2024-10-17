@@ -50,17 +50,19 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
     d3.select("#oceaniaJapan").on("click", () => zoomToRegion("Oceania + Japan"));
 
 
-    tooltip = d3.select(containerId)
-        .append("div")
+    tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0)
         .style("position", "absolute")
-        .style("visibility", "hidden")
-        .style("background-color", "rgba(0,0,0,0.7)")
-        .style("color", "#fff")
-        .style("padding", "5px 10px")
-        .style("border-radius", "5px")
-        .style("font-family", "Arial, sans-serif")
-        .style("font-size", "12px")
+        .style("background-color", "white")
+        .style("border", "1px solid #ccc")
+        .style("padding", "10px")
+        .style("border-radius", "4px")
+        .style("font-size", "14px")
+        .style("font-family", "Netflix_font")
+        .style("box-shadow", "0px 0px 10px rgba(0, 0, 0, 0.1)")
         .style("pointer-events", "none");
+
 
     // Set up margins
     const margin = {top: 20, right: 20, bottom: 50, left: 20};
@@ -203,13 +205,21 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
                 .attr("stroke", "#FFD700") // Gold color
                 .attr("stroke-width", 2);
 
-            // Show tooltip with country name
+            // Get country name and availability
             let countryName = d.properties.name;
             if (countryNameCorrections[countryName]) {
                 countryName = countryNameCorrections[countryName];
             }
-            tooltip.style("visibility", "visible")
-                .text(countryName);
+            const availability = availabilityByCountry.get(countryName) || 0;
+
+            // Show tooltip with country name and availability
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", 0.9); // Set opacity to make it visible
+
+            tooltip.html(`<strong>${countryName}</strong><br/>Shows Available: ${availability}`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 28) + "px");
         })
         .on("mousemove", function (event) {
             // Move the tooltip with the mouse
@@ -223,8 +233,10 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
                     .attr("stroke", "#fff")
                     .attr("stroke-width", 0.5);
             }
-            // Hide tooltip
-            tooltip.style("visibility", "hidden");
+            // Hide tooltip using opacity
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0); // Fade out the tooltip
         })
         .on("click", function (event, d) {
             let countryName = d.properties.name;
