@@ -5,6 +5,7 @@ import { createSankeyDiagram, updateSankeyDiagram } from './sankeyDiagram.js';
 import { createSlider } from './slider.js';
 import { createChoroplethMap, updateChoroplethMap } from './map.js';
 import { createList, updateList } from './list.js'; // Import updateList
+import { createSliderLegend } from './sliderLegend.js';
 
 let dataForSankey;
 let worldMapData;
@@ -14,6 +15,7 @@ let countByYearNetflixData;
 let countByYearandCoutryNetflixData;
 let movieCountryGenreAvailabilityData;
 let serieCountryGenreAvailabilityData;
+let threadholdSankey = 7;
 let dataIsLoaded = false;
 let yearMin = 2015;
 let yearMax = 2021;
@@ -61,6 +63,8 @@ async function createVisualization() {
         // Create the slider for the year range
         createSlider(yearMin, yearMax, updateDashboard);
 
+        createSliderLegend(updateSankeyDiagram, yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
+
         // Determine minYear and maxYear from the data
         const allYears = cleanedNetflix.map(d => +d.Release_Date.slice(-4)).filter(year => !isNaN(year));
         const minYear = d3.min(allYears);
@@ -75,7 +79,7 @@ async function createVisualization() {
 document.addEventListener('countrySelected', function(event) {
     selectedCountryForSankey = event.detail.country;
     // Update the Sankey diagram
-    updateSankeyDiagram(yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
+    updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
     // Update the list
     updateList(yearMin, yearMax, selectedCountryForSankey);
 });
@@ -84,9 +88,27 @@ document.addEventListener('countrySelected', function(event) {
 document.addEventListener('countryDeselected', function(event) {
     selectedCountryForSankey = null;
     // Update the Sankey diagram
-    updateSankeyDiagram(yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
+    updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
     // Update the list
     updateList(yearMin, yearMax, selectedCountryForSankey);
+});
+
+
+document.addEventListener('updateSliderSankey', function(event) {
+    threadholdSankey = event.detail.value;
+
+    // Now use the new slider value to update the Sankey diagram
+    updateSankeyDiagram(
+        yearMin,
+        yearMax,
+        threadholdSankey,
+        dataForSankey,
+        countByYearNetflixData,
+        countByYearandCoutryNetflixData,
+        movieCountryGenreAvailabilityData,
+        serieCountryGenreAvailabilityData,
+        selectedCountryForSankey
+    );
 });
 
 function updateDashboard(minYear, maxYear) {
@@ -95,7 +117,7 @@ function updateDashboard(minYear, maxYear) {
     yearMax = maxYear;
 
     // Update the Sankey diagram
-    updateSankeyDiagram(yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
+    updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
 
     // Update the choropleth map
     updateChoroplethMap(countryAvailabilityData, yearMin, yearMax);

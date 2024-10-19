@@ -1,5 +1,12 @@
 
-const color = d3.scaleOrdinal(d3.schemeDark2);
+// const color = d3.scaleOrdinal(d3.schemeDark2);
+const customColors = [
+    "#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#666666",
+    "#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5",
+    "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"
+];
+const color = d3.scaleOrdinal(customColors);
+
 // const color = d3.scaleOrdinal(d3.schemePaired);
 // const color = d3.scaleOrdinal(d3.schemeSet3);
 export function createSankeyDiagram(data, nbrOfMovie, nbrOfTvShow) {
@@ -188,43 +195,15 @@ export function createSankeyDiagram(data, nbrOfMovie, nbrOfTvShow) {
             .attr("text-anchor", "start");
 
 
-        // Function to show hidden genres in a popup
-        function showHiddenGenres(x, y) {
-            const hiddenGenresContainer = d3.select("#hidden-genres");
-            hiddenGenresContainer.html(''); // Clear previous content
-            hiddenNodes = nodes.filter(d => !nodeHasLinks.has(d.node))
-
-            hiddenNodes.forEach(hiddenNode => {
-                hiddenGenresContainer.append("div")
-                    .text(hiddenNode.name)
-                    .style("cursor", "pointer")
-                    .on("click", function () {
-                        // Optional: Action on genre click
-                        console.log("Clicked on genre:", hiddenNode.name);
-                    });
-            });
-
-            // Position the container
-            hiddenGenresContainer.style("left", (x + 10) + "px") // Offset for visibility
-                .style("top", (y + 10) + "px") // Offset for visibility
-                .style("display", "block"); // Show the container
-        }
-
-        // Hide the genres container when clicking elsewhere
-        d3.select("body").on("click", function (event) {
-            const hiddenGenresContainer = d3.select("#hidden-genres");
-            if (!hiddenGenresContainer.node().contains(event.target)) {
-                hiddenGenresContainer.style("display", "none"); // Hide if clicked outside
-            }
-        });
     });
 }
 
 
 
-export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, countByYear,countByYearandCoutryNetflixData,movieCountryGenreAvailabilityData,serieCountryGenreAvailabilityData, selectedCountryForSankey) {
+export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dataForSankey, countByYear,countByYearandCoutryNetflixData,movieCountryGenreAvailabilityData,serieCountryGenreAvailabilityData, selectedCountryForSankey) {
 
     var sankeyElement = document.getElementById("sankey");
+    d3.select("#sankey").select("svg").remove();
 
     // Get the width and height of the element
     var elementWidth = sankeyElement.offsetWidth;
@@ -240,6 +219,17 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         .attr("width", width)
         .attr("height", height)
         .append("g");
+
+    d3.select("#legend").select("svg").remove();
+    
+    var legendElement = document.getElementById("legend");
+    var widthLegend = legendElement.offsetWidth;
+    var heightLegend = legendElement.offsetHeight;
+    var svgLegend = d3.select("#legend").append("svg")
+    .attr("width", widthLegend)
+    .attr("height", heightLegend)
+    .append("g");
+
         
         
     var nodes = [{"node": 0, "name": "Movies"}, {"node": 1, "name": "TV shows"}];
@@ -251,11 +241,34 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
     var otherValueTVshow = 0
     var totalValueMovie = 0
     var totalValueTVshow = 0
-    
+    var filteredData = countByYearandCoutryNetflixData.filter(function(d) {
+        return d["Country_Availability"] == selectedCountryForSankey;
+    });
+
+
+    //There is not DATA
+    if (filteredData.length == 0 && selectedCountryForSankey != null) {
+        svg.append("text")
+            .attr("x", width / 2) // Use the width variable
+            .attr("y", height / 2) // Use the height variable
+            .attr("text-anchor", "middle")
+            .attr("font-size", "30px")
+            .attr("fill", "black") // Use fill instead of color
+            .attr("font-family", "Netflix_font")
+            .text("No Data Available in "+ selectedCountryForSankey);
+
+        svgLegend.append("text")
+            .attr("x", widthLegend / 2) // Use the width variable
+            .attr("y", heightLegend / 2) // Use the height variable
+            .attr("text-anchor", "middle")
+            .attr("font-size", "15px")
+            .attr("fill", "white") // Use fill instead of color
+            .attr("font-family", "Netflix_font")
+            .text("No Data Available in "+ selectedCountryForSankey);
+        return;
+    }
+
     if(selectedCountryForSankey != null) {
-        var filteredData = countByYearandCoutryNetflixData.filter(function(d) {
-            return d["Country_Availability"] == selectedCountryForSankey;
-        });
         filteredData.forEach(function(d) {
             var year = parseInt(d["Year"]);
             
@@ -277,6 +290,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
             }
         });
     }
+
     //add the nodes for movies
     if (selectedCountryForSankey != null) {
         otherValueMovie = 0;    
@@ -303,15 +317,17 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
                 });
             }
         });
+
         // Add the aggregated data to the nodes and links
         Object.keys(aggregatedData).forEach(function(key) {
             var genreValue = aggregatedData[key];
             nodes.push({"node": count, "name": key});
-            if (genreValue/totalValueMovie > 0.05) {
+            // if (genreValue/totalValueMovie > 0.15) {
                 links.push({"source": 0, "target": nodes.findIndex(node => node.name === key), "value": genreValue});
-            }
+            // }
             count += 1;
         });
+
     } else {
         dataForSankey[0].forEach(function(d) {
             var movieValue = 0;
@@ -319,13 +335,12 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
                 movieValue += parseFloat(d[String(year)]) || 0;
             }
             nodes.push({"node": count, "name": d.Genre});
-            if (movieValue / totalValueTVshow > 0.15) {
+            // if (movieValue / totalValueTVshow > 0.15) {
                 links.push({"source": 0, "target": nodes.findIndex(node => node.name === d.Genre), "value": movieValue});
-            }
+            // }
             count += 1;
         });
     }
-    console.log("nodes", nodes);
     //add the nodes and links for TV shows
     count = 2;
     if (selectedCountryForSankey != null) {
@@ -360,9 +375,9 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
                 nodes.push({"node": count, "name": key});
             }
             const targetIndex = nodes.findIndex(node => node.name === key);
-            if (genreValue/totalValueTVshow > 0.05 || links.some(link => link.target === targetIndex)) {
+            // if (genreValue/totalValueTVshow > 0.05 || links.some(link => link.target === targetIndex)) {
                     links.push({"source": 1, "target": targetIndex, "value": genreValue});
-            }
+            // }
             count += 1;
         });
     } else {
@@ -371,17 +386,33 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         for (var year = yearMin; year <= yearMax; year++) {
             TVshowValue += parseFloat(d[String(year)]) || 0;
         }
-        const targetIndex = nodes.findIndex(node => node.name === d.Genre);
-        if (TVshowValue/totalValueTVshow > 0.15 || links.some(link => link.target === targetIndex)) {
-            links.push({"source": 1, "target": nodes.findIndex(node => node.name === d.Genre), "value": TVshowValue});
+        if (nodes.findIndex(node => node.name === d.Genre) == -1) {
+            nodes.push({"node": count, "name": d.Genre});
         }
+        const targetIndex = nodes.findIndex(node => node.name === d.Genre);
+        // if (TVshowValue/totalValueTVshow > 0.05 || links.some(link => link.target === targetIndex)) {
+            links.push({"source": 1, "target": nodes.findIndex(node => node.name === d.Genre), "value": TVshowValue});
+        // }
         count += 1
     });
     }
 
-    nodes.push({"node": count, "name": "Other"})
-    links.push({"source": 0, "target": count, "value": otherValueMovie});
-    links.push({"source": 1, "target": count, "value": otherValueTVshow});
+    // Filter Movie links based on the threshold
+    const movieLinks = links.filter(d => d.source === 0 && d.value / totalValueMovie > threadholdSankey / 100);
+    
+    // Track genres that have been added for Movies
+    const addedGenres = new Set(movieLinks.map(d => d.target));
+    
+    // Filter TV Show links based on the threshold and added genres
+    const tvShowLinks = links.filter(d => {
+        if (d.source === 1) {
+            return d.value / totalValueTVshow > threadholdSankey / 100 || addedGenres.has(d.target);
+        }
+        return false;
+    });
+    
+    // Combine Movie and TV Show links
+    links = movieLinks.concat(tvShowLinks);
 
     const nodeHasLinks = new Set();
     links.forEach(link => {
@@ -389,8 +420,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         nodeHasLinks.add(link.target);
     });
     
-    // Filter the nodes array to only include nodes that have links
-    const filteredNodes = nodes.filter(node => nodeHasLinks.has(node.node));
+
     // Set up the Sankey generator
     var sankey = d3.sankey()
         .nodeWidth(70)  // Set node width
@@ -403,15 +433,6 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         links: links.map(d => Object.assign({}, d))  // Deep copy links
     });
 
-    // Validate the data
-    graph.links.forEach(link => {
-        if (isNaN(link.width)) {
-            console.error("Invalid link width:", link);
-        }
-        if (isNaN(link.source.x0) || isNaN(link.source.x1) || isNaN(link.target.x0) || isNaN(link.target.x1)) {
-            console.error("Invalid link coordinates:", link);
-        }
-    });
     
     var tooltip = d3.select("#map").append("div")
     .attr("class", "tooltip")
@@ -468,7 +489,8 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         .attr("transform", function (d) {
             return "translate(" + d.x0 + "," + d.y0 + ")";
         });
-        
+    
+    node = node.sort((a,b) => a.value < (b.value))
         
         // add the rectangles for the nodes
     node
@@ -493,8 +515,9 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
 
 
         // add in the title for the nodes
-        node
+    node
         .filter(d => nodeHasLinks.has(d.node))
+        .filter(d => d.name === "Movies" || d.name === "TV shows")
         .append("text")
         .attr("x", function (d) {
             return d.dx / 5;
@@ -511,8 +534,9 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
         })
         .attr("text-anchor", "start");
     
-        node
+    node
         .filter(d => nodeHasLinks.has(d.node))
+        .filter(d => d.name === "Movies" || d.name === "TV shows")
         .filter(function (d) {
             // Check if the node is big enough to hold the text
             const nodeHeight = d.y1 - d.y0;
@@ -540,7 +564,47 @@ export async function updateSankeyDiagram(yearMin, yearMax, dataForSankey, count
             }
         })
         .attr("text-anchor", "start");
-        
-    d3.select("#sankey").select("svg").remove();
+
+
+        const legendGroup = svgLegend.append("g")
+        .attr("class", "legend-group")
+    
+        const legendSize = 10;  // Size of the legend dots
+        const legendSpacing = 22;  // Space between legend items
+
+        const filteredLegendNodes = node.filter(d => d.name !== "Movies" && d.name !== "TV shows" && d.name !=="Other");
+
+        // Loop through each node and add a corresponding legend entry
+        filteredLegendNodes
+        .filter(d => nodeHasLinks.has(d.node))
+        .filter((d, i) => {
+            // Add the color dot
+            legendGroup.append("circle")
+                .attr("cx", 10)
+                .attr("cy", i * legendSpacing + 10)  // Vertical spacing for each legend item
+                .attr("r", legendSize)
+                .style("fill", color(d.name));  // Use the same color as the node
+
+            // Add the name label next to the dot
+            legendGroup.append("text")
+                .attr("x", legendSize * 2 + 10)  // Place text a bit to the right of the dot
+                .attr("y", i * legendSpacing + 10)  // Center the text vertically
+                .attr("dy", ".35em")  // Align the text properly
+                .style("font-family", "Netflix_font")
+                .style("font-size", "15px")
+                .style("fill", "white")  // Use white text color
+                .text(d.name);
+
+            // Add the value label with additional spacing
+            legendGroup.append("text")
+                .attr("x", legendSize * 2 + 100)  // Adjust this value for proper spacing from d.name
+                .attr("y", i * legendSpacing + 10)  // Center the text vertically
+                .attr("dy", ".35em")  // Align the text properly
+                .style("font-family", "Netflix_font")
+                .style("font-size", "15px")
+                .style("fill", "white")  // Use white text color
+                .text(d.value);
+        }); 
+
 
 }

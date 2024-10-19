@@ -217,7 +217,7 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
                 .duration(200)
                 .style("opacity", 0.9); // Set opacity to make it visible
 
-            tooltip.html(`<strong>${countryName}</strong><br/>Shows Available: ${availability}`)
+            tooltip.html(`<strong>${countryName}</strong><br/>Titles Released: ${availability}`)
                 .style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY - 28) + "px");
         })
@@ -397,7 +397,7 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
     legendGroup.append("text")
         .attr("x", 0)
         .attr("y", -10)
-        .text("Availability")
+        .text("Content Released")
         .style("fill", "#fff")
         .style("font-size", "14px")
         .style("font-weight", "bold")
