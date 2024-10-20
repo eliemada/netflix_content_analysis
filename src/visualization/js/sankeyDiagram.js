@@ -1,7 +1,7 @@
 
 // const color = d3.scaleOrdinal(d3.schemeDark2);
 const customColors = [
-    "#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#666666",
+    "lightblue", "red", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#666666",
     "#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5",
     "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"
 ];
@@ -457,14 +457,21 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
         .style("stroke-width", function (d) {
             return Math.max(1, d.width);
         })
-        .sort(function (a, b) {
-            return b.width - a.width;
-        })
+        .style("stroke", function (d) {
+            if (d.source.name == "Movies") {
+                return "lightblue";
+            } else {   
+                return "#ff0000";
+        }})
+        // .sort(function (a, b) {
+        //     console.log("test",a.source.name, a.target,a.value );
+        //     return a.target.value < (b.target.value);
+        // })
         .on("mouseover", function (event, d) {
             // Show the value on hover
             tooltip.transition()
                 .duration(200)
-                .style("opacity", 0.9);
+                .style("opacity", 1);
 
             // Update the tooltip content and position
             tooltip.html(`Value: ${d.value}<br>Source: ${d.source.name}<br>Target: ${d.target.name}`)
@@ -475,7 +482,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
             // Hide the tooltip on mouseout
             tooltip.transition()
             .duration(500)
-            .style("opacity", 0);
+            .style("opacity", 0.7);
         });
         
 
@@ -529,6 +536,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
         .attr("text-anchor", "end")
         .attr("transform", null)
         .style("font-family", "Netflix_font")
+        .style("fill", "white")
         .text(function (d) {
             return d.name
         })
@@ -554,6 +562,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
         .attr("text-anchor", "end")
         .attr("transform", null)
         .style("font-family", "Netflix_font")
+        .style("fill", "white")
         .text(function (d) {
             if (d.node == 0) {
                 return totalValueMovie;
@@ -564,19 +573,29 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
             }
         })
         .attr("text-anchor", "start");
+        
+        const filteredLegendNodes = node.filter(d => d.name !== "Movies" && d.name !== "TV shows" && d.name !=="Other").filter(d => nodeHasLinks.has(d.node));
+        const legendSpacing = 22;  // Space between legend items
+        d3.select("#legend").select("svg").remove();
+    
+        var legendElement = document.getElementById("legend");
+        var widthLegend = legendElement.offsetWidth;
+        var heightLegend = legendElement.offsetHeight;
+        var svgLegend = d3.select("#legend").append("svg")
+        .attr("width", widthLegend)
+        .attr("height", filteredLegendNodes.size() * legendSpacing)
+        .append("g");
+    
 
 
         const legendGroup = svgLegend.append("g")
         .attr("class", "legend-group")
     
         const legendSize = 10;  // Size of the legend dots
-        const legendSpacing = 22;  // Space between legend items
 
-        const filteredLegendNodes = node.filter(d => d.name !== "Movies" && d.name !== "TV shows" && d.name !=="Other");
 
         // Loop through each node and add a corresponding legend entry
         filteredLegendNodes
-        .filter(d => nodeHasLinks.has(d.node))
         .filter((d, i) => {
             // Add the color dot
             legendGroup.append("circle")
