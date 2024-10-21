@@ -6,6 +6,7 @@ import { createSlider } from './slider.js';
 import { createChoroplethMap, updateChoroplethMap } from './map.js';
 import { createList, updateList } from './list.js'; // Import updateList
 import { createSliderLegend } from './sliderLegend.js';
+import {createTopButtons} from './topButtons.js';
 
 let dataForSankey;
 let worldMapData;
@@ -63,6 +64,8 @@ async function createVisualization() {
         // Create the slider for the year range
         createSlider(yearMin, yearMax, updateDashboard);
 
+        createTopButtons(yearMin, yearMax, selectedCountryForSankey);
+
         createSliderLegend(updateSankeyDiagram, yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
 
         // Determine minYear and maxYear from the data
@@ -116,6 +119,7 @@ function updateDashboard(minYear, maxYear) {
     yearMin = minYear;
     yearMax = maxYear;
 
+
     // Update the Sankey diagram
     updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
 
@@ -124,6 +128,7 @@ function updateDashboard(minYear, maxYear) {
 
     // Update the list
     updateList(yearMin, yearMax, selectedCountryForSankey);
+
 }
 
 // Initialize the visualization when the window loads

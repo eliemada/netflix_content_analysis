@@ -314,6 +314,7 @@ function updateTable() {
             d3.select(this).selectAll('*').remove(); // Clear previous content
             createBarChart(d, this);
         });
+    updateTitle();
 }
 
 function updateTitle() {
@@ -524,7 +525,10 @@ function truncateText(text, maxLength) {
 }
 
 // Function to update the list when minYear, maxYear, or selectedCountry change
-export function updateList(minYear, maxYear, selectedCountry) {
+export function updateList(minYear, maxYear, selectedCountry, selectedType = null) {
+    if (selectedType) {
+        typeFilter = selectedType;
+    }
     minYearGlobal = minYear;
     maxYearGlobal = maxYear;
     selectedCountryGlobal = selectedCountry;

@@ -248,23 +248,17 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
 
     //There is not DATA
     if (filteredData.length == 0 && selectedCountryForSankey != null) {
+        console.log("No data available in "+ selectedCountryForSankey);
+
         svg.append("text")
             .attr("x", width / 2) // Use the width variable
             .attr("y", height / 2) // Use the height variable
             .attr("text-anchor", "middle")
             .attr("font-size", "30px")
-            .attr("fill", "black") // Use fill instead of color
-            .attr("font-family", "Netflix_font")
-            .text("No Data Available in "+ selectedCountryForSankey);
-
-        svgLegend.append("text")
-            .attr("x", widthLegend / 2) // Use the width variable
-            .attr("y", heightLegend / 2) // Use the height variable
-            .attr("text-anchor", "middle")
-            .attr("font-size", "15px")
             .attr("fill", "white") // Use fill instead of color
             .attr("font-family", "Netflix_font")
             .text("No Data Available in "+ selectedCountryForSankey);
+
         return;
     }
 
@@ -307,7 +301,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
             if (year >= yearMin && year <= yearMax) {
                 Object.keys(d).forEach(function(key) {
                     if (key != "Country_Availability" && key != "Year") {
-                        var genreValue = parseFloat(d[key]) || 0;
+                        var genreValue = parseFloat(d[key]);
                         if (!aggregatedData[key]) {
                             aggregatedData[key] = 0;
                         }
@@ -471,7 +465,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
             // Show the value on hover
             tooltip.transition()
                 .duration(200)
-                .style("opacity", 1);
+                .style("opacity", 0.9);
 
             // Update the tooltip content and position
             tooltip.html(`Value: ${d.value}<br>Source: ${d.source.name}<br>Target: ${d.target.name}`)
@@ -482,7 +476,7 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
             // Hide the tooltip on mouseout
             tooltip.transition()
             .duration(500)
-            .style("opacity", 0.7);
+            .style("opacity", 0.0);
         });
         
 
@@ -497,11 +491,12 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
             return "translate(" + d.x0 + "," + d.y0 + ")";
         });
     
-    node = node.sort((a,b) => a.value < (b.value))
+    node = node.sort((a,b) => a.value < (b.value)).filter(d => nodeHasLinks.has(d.node));
+
+    
         
         // add the rectangles for the nodes
     node
-        .filter(d => nodeHasLinks.has(d.node))
         .append("rect")
         .attr("height", function (d) {
             return d.y1 - d.y0;
@@ -523,58 +518,43 @@ export async function updateSankeyDiagram(yearMin, yearMax, threadholdSankey,dat
 
         // add in the title for the nodes
     node
-        .filter(d => nodeHasLinks.has(d.node))
         .filter(d => d.name === "Movies" || d.name === "TV shows")
         .append("text")
         .attr("x", function (d) {
-            return d.dx / 5;
+            return (d.x1 - d.x0) / 2; 
         })
         .attr("y", function (d) {
             return (d.y1 - d.y0) / 2;
         })
         .attr("dy", ".35em")
-        .attr("text-anchor", "end")
-        .attr("transform", null)
+        .attr("text-anchor", "middle")
         .style("font-family", "Netflix_font")
         .style("fill", "white")
         .text(function (d) {
             return d.name
-        })
-        .attr("text-anchor", "start");
+        });
     
     node
-        .filter(d => nodeHasLinks.has(d.node))
         .filter(d => d.name === "Movies" || d.name === "TV shows")
-        .filter(function (d) {
-            // Check if the node is big enough to hold the text
-            const nodeHeight = d.y1 - d.y0;
-            const minHeightThreshold = 40; // Set a minimum height threshold
-            return nodeHeight > minHeightThreshold;
-        })
         .append("text")
         .attr("x", function (d) {
-            return d.dx / 5;
+            return (d.x1 - d.x0) / 2; 
         })
         .attr("y", function (d) {
             return (d.y1 - d.y0) / 2 + 15;
         })
         .attr("dy", ".35em")
-        .attr("text-anchor", "end")
-        .attr("transform", null)
         .style("font-family", "Netflix_font")
         .style("fill", "white")
+        .attr("text-anchor", "middle")
         .text(function (d) {
             if (d.node == 0) {
                 return totalValueMovie;
-            } else if (d.node == 1) {
+            } else  {
                 return totalValueTVshow;
-            } else {
-                return d.value;
-            }
-        })
-        .attr("text-anchor", "start");
+        }});
         
-        const filteredLegendNodes = node.filter(d => d.name !== "Movies" && d.name !== "TV shows" && d.name !=="Other").filter(d => nodeHasLinks.has(d.node));
+        const filteredLegendNodes = node.filter(d => d.name !== "Movies" && d.name !== "TV shows" && d.name !=="Other");
         const legendSpacing = 22;  // Space between legend items
         d3.select("#legend").select("svg").remove();
     

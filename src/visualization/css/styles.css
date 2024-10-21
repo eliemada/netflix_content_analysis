@@ -44,14 +44,12 @@ html, body {
     text-align: center; /* Center the text */
     font-size: 16px; /* Text size */
     cursor: pointer; /* Change cursor on hover */
-    border-radius: 12px; /* Add rounded corners */
     
   }
 
   /* Button hover effect */
 .topbar-btn:hover {
-    background-color: #363636; /* Darker green on hover */
-    transform: scale(1.05);
+    color: gray;
 
   }
 
