@@ -4,10 +4,10 @@
     <!-- Meta tags -->
     <meta charset="utf-8">
     <!-- Load external libraries -->
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.1/nouislider.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.1/nouislider.min.js"></script>
+    <script src="./src/visualization/lib/d3.v7.min.js"></script>
+    <script src="./src/visualization/lib/d3-sankey.min.js"></script>
+    <link rel="stylesheet" href="./src/visualization/css/nouislider.min.css">
+    <script src="./src/visualization/js/nouislider.min.js"></script>
     <script src="./src/visualization/lib/topojson-client.min.js"></script>
 
     <!-- Load custom styles and scripts -->
@@ -15,7 +15,10 @@
     <script type="module" src="./src/visualization/js/main.js"></script>
     <title>Netflix Visualization</title>
 </head>
-<body onload="createVisualization()">
+<body>
+<div id="preloader">
+    <div class="loader"></div>
+</div>
 <div id="topBar">
     Netflix around the world from 2015 to 2021
     <button id="Home" onclick="window.location.href = window.location.href;" class="topbar-btn">Home</button>
@@ -48,6 +51,7 @@
             <button id="oceaniaJapan">Oceania + Japan</button>
         </div>
         <div id="yourTop">
+            <p style="color:white;">Test content for yourTop section</p>
         </div>
     </div>
 </div>

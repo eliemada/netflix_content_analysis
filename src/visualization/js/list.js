@@ -3,9 +3,9 @@
 let cleanedNetflixData;
 let minYearGlobal;
 let maxYearGlobal;
-let numLines = 3;
+let numLines = 5;
 const maxLines = 15;
-const minLines = 3;
+const minLines = 5;
 let typeFilter = 'All';
 let selectedCountryGlobal = null;
 let titleElement;
@@ -296,7 +296,7 @@ function updateTable() {
 
     // Update image cell
     allRows.select('td.image-cell img')
-        .attr('src', d => d.Image)
+        .attr('src', d => d.Local_Image)
         .attr('alt', d => d.Title)
         .style('width', '50px') // Adjust image size
         .style('height', 'auto');

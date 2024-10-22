@@ -21,7 +21,6 @@ let dataIsLoaded = false;
 let yearMin = 2015;
 let yearMax = 2021;
 let selectedCountryForSankey = null;
-
 async function createVisualization() {
     try {
         const {
@@ -33,7 +32,6 @@ async function createVisualization() {
             countByYearandCoutryData: countByYearandCoutry,
             movieCountryGenreAvailabilityData: movieCountryGenreAvailability,
             serieCountryGenreAvailabilityData: serieCountryGenreAvailability
-
         } = await loadData();
 
         console.log("Data loaded successfully:", countByYear);
@@ -68,15 +66,20 @@ async function createVisualization() {
 
         createSliderLegend(updateSankeyDiagram, yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
 
-        // Determine minYear and maxYear from the data
-        const allYears = cleanedNetflix.map(d => +d.Release_Date.slice(-4)).filter(year => !isNaN(year));
-        const minYear = d3.min(allYears);
-        const maxYear = d3.max(allYears);
+        // Hide preloader and show main content with transition
+        document.getElementById('preloader').style.display = 'none';
+        document.getElementById('topBar').style.display = 'flex';
+        document.getElementById('dashboard').style.display = 'flex';
+        document.getElementById('rightSide').style.display = 'flex';
+        document.getElementById('rightSide').style.opacity = '1';
+        document.getElementById('topBar').style.opacity = '1';
+        document.getElementById('dashboard').style.opacity = '1';
 
     } catch (error) {
         console.error("Visualization could not be created:", error);
     }
 }
+
 
 // Listen for the countrySelected event
 document.addEventListener('countrySelected', function(event) {
