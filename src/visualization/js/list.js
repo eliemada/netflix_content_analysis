@@ -326,9 +326,10 @@ function updateTitle() {
     };
 
     const typeText = typeMapping[typeFilter] || 'Titles';
+    const countryText = selectedCountryGlobal ? `in ${selectedCountryGlobal}` : 'in the world';
 
     // Update the title text
-    titleElement.text(`YOUR TOP ${numLines} ${typeText.toUpperCase()}`);
+    titleElement.text(`TOP ${numLines} ${typeText.toUpperCase()} ${countryText}`);
 }
 // Function to create the bar chart for each row
 function createBarChart(d, cell) {
@@ -529,6 +530,7 @@ export function updateList(minYear, maxYear, selectedCountry, selectedType = nul
     if (selectedType) {
         typeFilter = selectedType;
     }
+
     minYearGlobal = minYear;
     maxYearGlobal = maxYear;
     selectedCountryGlobal = selectedCountry;

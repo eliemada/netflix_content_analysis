@@ -1,6 +1,6 @@
 import { updateList } from "./list.js";
 
-export function createTopButtons(yearMin, yearMax, selectedCountryForSankey) {
+export function createTopButtons(yearMin, yearMax, getSelectedCountry) {
     var buttonTVShows = document.getElementById("TV Shows");
     var buttonMovies = document.getElementById("Movies");
 
@@ -15,12 +15,16 @@ export function createTopButtons(yearMin, yearMax, selectedCountryForSankey) {
     }
 
     buttonTVShows.onclick = function() {
+        const selectedCountryForSankey = getSelectedCountry();  // Call the getter function to get the latest value
         updateList(yearMin, yearMax, selectedCountryForSankey, "TV Show");
+        console.log("COuntry selected is ", selectedCountryForSankey);
         updateTypeSelect("TV Show");  // Update the type-select to "TV Show"
     }
 
     buttonMovies.onclick = function() {
+        const selectedCountryForSankey = getSelectedCountry();  // Call the getter function to get the latest value
         updateList(yearMin, yearMax, selectedCountryForSankey, "Movie");
+        console.log("COuntry selected is ", selectedCountryForSankey);
         updateTypeSelect("Movie");  // Update the type-select to "Movie"
     }
 }

@@ -62,7 +62,7 @@ async function createVisualization() {
         // Create the slider for the year range
         createSlider(yearMin, yearMax, updateDashboard);
 
-        createTopButtons(yearMin, yearMax, selectedCountryForSankey);
+        createTopButtons(yearMin, yearMax, () => selectedCountryForSankey);
 
         createSliderLegend(updateSankeyDiagram, yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
 
