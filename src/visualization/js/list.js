@@ -228,7 +228,7 @@ function updateTable() {
         .style('padding', '8px')
         .style('text-align', 'center')  // Center align cell content
         .append('img')
-        .attr('src', d => d.Image)
+        .attr('src', d => d.Local_Image)
         .attr('alt', d => d.Title)
         .style('width', '50px') // Reduced image size
         .style('height', 'auto')
@@ -237,7 +237,7 @@ function updateTable() {
         .style('cursor', 'pointer')
         .on('click', function(event, d) {
             // Enlarge the image when clicked
-            showImageModal(d.Image, d.Title);
+            showImageModal(d.Local_Image, d.Title);
         });
 
     // Title cell
