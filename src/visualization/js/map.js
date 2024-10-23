@@ -439,6 +439,7 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
 
 export function updateChoroplethMap(countryAvailabilityData, minYear, maxYear) {
     // Update the availabilityByCountry map with new data
+    console.log("Country Availability Data:", countryAvailabilityData);
     availabilityByCountry.clear();
     countryAvailabilityData.forEach(d => {
         const countryName = d.Country;
