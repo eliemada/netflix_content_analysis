@@ -1,7 +1,7 @@
 // main.js
 
 import { loadData } from './dataLoader.js';
-import { createSankeyDiagram, updateSankeyDiagram } from './sankeyDiagram.js';
+import {  updateSankeyDiagram } from './sankeyDiagram.js';
 import { createSlider } from './slider.js';
 import { createChoroplethMap, updateChoroplethMap } from './map.js';
 import { createList, updateList } from './list.js'; // Import updateList
@@ -16,6 +16,8 @@ let countByYearNetflixData;
 let countByYearandCoutryNetflixData;
 let movieCountryGenreAvailabilityData;
 let serieCountryGenreAvailabilityData;
+let movieCountryAvailabilityData;
+let TVShowCountryAvailabilityData;
 let threadholdSankey = 7;
 let dataIsLoaded = false;
 let yearMin = 2015;
@@ -31,7 +33,9 @@ async function createVisualization() {
             countByYearData: countByYear,
             countByYearandCoutryData: countByYearandCoutry,
             movieCountryGenreAvailabilityData: movieCountryGenreAvailability,
-            serieCountryGenreAvailabilityData: serieCountryGenreAvailability
+            serieCountryGenreAvailabilityData: serieCountryGenreAvailability,
+            movieCountryAvailabilityData: movieCountryAvailability,
+            TVShowCountryAvailabilityData: TVShowCountryAvailability
         } = await loadData();
 
         console.log("Data loaded successfully:", countByYear);
@@ -44,6 +48,8 @@ async function createVisualization() {
         cleanedNetflix = cleanedNetflixData;
         movieCountryGenreAvailabilityData = movieCountryGenreAvailability;
         serieCountryGenreAvailabilityData = serieCountryGenreAvailability;
+        movieCountryAvailabilityData = movieCountryAvailability;
+        TVShowCountryAvailabilityData = TVShowCountryAvailability;
 
         yearMin = 2015;
         yearMax = 2021;
@@ -53,16 +59,13 @@ async function createVisualization() {
         // Create the choropleth map first
         createChoroplethMap(worldMapData, countryAvailabilityData, '#map', yearMin, yearMax);
 
-        // Create the Sankey diagram
-        createSankeyDiagram(yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData);
-
         // Create the list
         createList(cleanedNetflix, yearMin, yearMax);
 
         // Create the slider for the year range
         createSlider(yearMin, yearMax, updateDashboard);
 
-        createTopButtons(yearMin, yearMax, () => selectedCountryForSankey);
+        createTopButtons(yearMin, yearMax, () => selectedCountryForSankey, movieCountryAvailabilityData, TVShowCountryAvailabilityData);
 
         createSliderLegend(updateSankeyDiagram, yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
 

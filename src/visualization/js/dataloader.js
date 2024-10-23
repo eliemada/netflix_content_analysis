@@ -11,9 +11,10 @@ export async function loadData() {
     const countByYearandCoutryFile = "./src/dataset/pre_processing/count_by_country_and_year.csv";
     const movieCountryGenreAvailabilityFile = "./src/dataset/pre_processing/movies_country_genre_availability_by_year.csv";
     const serieCountryGenreAvailabilityFile = "./src/dataset/pre_processing/tv_shows_country_genre_availability_by_year.csv";
-
+    const movieCountryAvailabilityFile = "./src/dataset/pre_processing/movies_country_availability.csv"
+    const TVShowCountryAvailabilityFile = "./src/dataset/pre_processing/tv_shows_country_availability.csv"
     try {
-        const [movieAndTvData, cleanedNetflixData, genrePercentagesData, worldMapData, countryAvailabilityData, countByYearData,countByYearandCoutryData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData] = await Promise.all([
+        const [movieAndTvData, cleanedNetflixData, genrePercentagesData, worldMapData, countryAvailabilityData, countByYearData,countByYearandCoutryData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, movieCountryAvailabilityData,TVShowCountryAvailabilityData ] = await Promise.all([
             Promise.all([d3.csv(movieGenreCountsFile), d3.csv(tvShowsGenreCountsFile)]),
             d3.csv(cleanedNetflixDataFile),
             d3.csv(genrePercentagesFile),
@@ -22,7 +23,9 @@ export async function loadData() {
             d3.csv(countByYearFile),
             d3.csv(countByYearandCoutryFile),
             d3.csv(movieCountryGenreAvailabilityFile),
-            d3.csv(serieCountryGenreAvailabilityFile)
+            d3.csv(serieCountryGenreAvailabilityFile),
+            d3.csv(movieCountryAvailabilityFile),
+            d3.csv(TVShowCountryAvailabilityFile)
         ]);
 
 
@@ -35,7 +38,9 @@ export async function loadData() {
             countByYearData: countByYearData, 
             countByYearandCoutryData: countByYearandCoutryData, 
             movieCountryGenreAvailabilityData: movieCountryGenreAvailabilityData,
-            serieCountryGenreAvailabilityData: serieCountryGenreAvailabilityData
+            serieCountryGenreAvailabilityData: serieCountryGenreAvailabilityData,
+            movieCountryAvailabilityData: movieCountryAvailabilityData,
+            TVShowCountryAvailabilityData: TVShowCountryAvailabilityData
 
         };
     } catch (error) {
