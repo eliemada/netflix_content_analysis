@@ -263,13 +263,13 @@ export function createChoroplethMap(worldMapData, countryAvailabilityData, conta
                     .interrupt();
                 selectedCountry = null;
                 const deselectEvent = new CustomEvent('countryDeselected', {
-                    detail: { country: countryName }
+                    detail: {country: countryName}
                 });
                 document.dispatchEvent(deselectEvent);
             } else {
                 // // Emit a custom event with the country name
                 const event = new CustomEvent('countrySelected', {
-                    detail: { country: countryName}
+                    detail: {country: countryName}
                 });
                 document.dispatchEvent(event);
                 // Select the country
