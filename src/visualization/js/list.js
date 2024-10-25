@@ -363,22 +363,19 @@ function updateTable() {
 function updateTitle() {
     let titleText = `TOP ${numLines}`;
 
+    // Check genreFilter and typeFilter for descriptive title
     if (genreFilter !== 'All') {
-        titleText += ` ${genreFilter.toUpperCase()}`;
-    } else {
-        // Map 'All' to 'Titles' for the title
-        const typeMapping = {
-            'All': 'Titles',
-            'Movie': 'Movies',
-            'TV Show': 'Series'
-        };
-
-        const typeText = typeMapping[typeFilter] || 'Titles';
-        titleText += ` ${typeText.toUpperCase()}`;
+        titleText += ` ${genreFilter}`;
     }
 
-    const countryText = selectedCountryGlobal ? `in ${selectedCountryGlobal}` : 'in the world';
+    if (typeFilter !== 'All') {
+        titleText += ` ${typeFilter === 'TV Show' ? 'Series' : 'Movies'}`;
+    } else if (genreFilter === 'All') {
+        titleText += ' Titles';
+    }
 
+    // Append country if selected
+    const countryText = selectedCountryGlobal ? `in ${selectedCountryGlobal}` : 'in the world';
     titleText += ` ${countryText}`;
 
     // Update the title text
