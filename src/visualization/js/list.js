@@ -7,6 +7,7 @@ let numLines = 5;
 const maxLines = 15;
 const minLines = 5;
 let typeFilter = 'All';
+let genreFilter = 'All';
 let selectedCountryGlobal = null;
 let titleElement;
 // Function to create the list UI
@@ -14,6 +15,17 @@ export function createList(data, minYear, maxYear) {
     cleanedNetflixData = data;
     minYearGlobal = minYear;
     maxYearGlobal = maxYear;
+
+    const genresSet = new Set();
+    data.forEach(d => {
+        if (d.Genre) {
+            d.Genre.split(',').forEach(genre => {
+                genresSet.add(genre.trim());
+            });
+        }
+    });
+    const genresList = ['All', ...Array.from(genresSet).sort()];
+
 
     // Select the 'yourTop' div
     const container = d3.select('#yourTop')
@@ -64,6 +76,30 @@ export function createList(data, minYear, maxYear) {
         updateTable();
         updateTitle()
     });
+
+    // Create the Genre filter
+    filters.append('label')
+        .text('Genre: ')
+        .style('margin-right', '5px');
+
+    const genreSelect = filters.append('select')
+        .attr('id', 'genre-select')
+        .style('margin-right', '20px');
+
+    // Add options to the genreSelect
+    genreSelect.selectAll('option')
+        .data(genresList)
+        .enter()
+        .append('option')
+        .text(d => d);
+
+    // Event listener for genreSelect
+    genreSelect.on('change', function() {
+        genreFilter = this.value;
+        updateTable();
+        updateTitle();
+    });
+
 
     // Create the + and - buttons with updated styles
     filters.append('button')
@@ -183,6 +219,14 @@ function updateTable() {
     if (typeFilter !== 'All') {
         const dataType = typeMapping[typeFilter];
         filteredData = filteredData.filter(d => d.Series_or_Movie === dataType);
+    }
+
+    // Filter by selected genre
+    if (genreFilter !== 'All') {
+        filteredData = filteredData.filter(d => {
+            const genres = d.Genre ? d.Genre.split(',').map(g => g.trim()) : [];
+            return genres.includes(genreFilter);
+        });
     }
 
     filteredData = filteredData.filter(d => {
@@ -316,21 +360,31 @@ function updateTable() {
         });
     updateTitle();
 }
-
 function updateTitle() {
-    // Map 'All' to 'Titles' for the title
-    const typeMapping = {
-        'All': 'Titles',
-        'Movie': 'Movies',
-        'TV Show': 'Series'
-    };
+    let titleText = `TOP ${numLines}`;
 
-    const typeText = typeMapping[typeFilter] || 'Titles';
+    if (genreFilter !== 'All') {
+        titleText += ` ${genreFilter.toUpperCase()}`;
+    } else {
+        // Map 'All' to 'Titles' for the title
+        const typeMapping = {
+            'All': 'Titles',
+            'Movie': 'Movies',
+            'TV Show': 'Series'
+        };
+
+        const typeText = typeMapping[typeFilter] || 'Titles';
+        titleText += ` ${typeText.toUpperCase()}`;
+    }
+
     const countryText = selectedCountryGlobal ? `in ${selectedCountryGlobal}` : 'in the world';
 
+    titleText += ` ${countryText}`;
+
     // Update the title text
-    titleElement.text(`TOP ${numLines} ${typeText.toUpperCase()} ${countryText}`);
+    titleElement.text(titleText);
 }
+
 // Function to create the bar chart for each row
 function createBarChart(d, cell) {
     // Data for the bar chart
