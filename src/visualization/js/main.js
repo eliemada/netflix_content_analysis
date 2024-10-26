@@ -67,7 +67,7 @@ async function createVisualization() {
 
         createTopButtons(yearMin, yearMax, () => selectedCountryForSankey, movieCountryAvailabilityData, TVShowCountryAvailabilityData);
 
-        createSliderLegend(updateSankeyDiagram, yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
+        // createSliderLegend(updateSankeyDiagram, yearMin, yearMax, dataForSankey, countByYearNetflixData, countByYearandCoutryNetflixData, movieCountryGenreAvailabilityData, serieCountryGenreAvailabilityData, selectedCountryForSankey);
 
         // Hide preloader and show main content with transition
         document.getElementById('preloader').style.display = 'none';
