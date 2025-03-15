@@ -4,12 +4,12 @@ import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Create a cache directory for images
-cache_dir = "./src/dataset/image_cache"
+cache_dir = "./assets/images/cached"
 os.makedirs(cache_dir, exist_ok=True)
 
 # Load your CSV file and create a new one with local image paths
-csv_file = "./src/dataset/cleaned_netflix_data.csv"
-new_csv_file = "./src/dataset/cleaned_netflix_data_with_local_images.csv"
+csv_file = "../data/initial_dataset/processed/cleaned_netflix_data.csv
+new_csv_file = "../data/initial_dataset/processed/cleaned_netflix_data_with_local_images.csv"
 
 # Function to download a single image
 def download_image(image_url, image_name):
@@ -43,7 +43,7 @@ with open(csv_file, mode='r', encoding='utf-8') as infile, open(new_csv_file, mo
             image_name = f"cover{image_counter}.jpg"  # Name images as cover1.jpg, cover2.jpg, etc.
             futures.append(executor.submit(download_image, image_url, image_name))
 
-            row['Local_Image'] = f"./src/dataset/image_cache/cover{image_counter}.jpg"  # Pre-set path for CSV
+            row['Local_Image'] = f"./assets/images/cached/cover{image_counter}.jpg"  # Pre-set path for CSV
             writer.writerow(row)  # Write the row early with the assumed path
 
             # Increment the image counter
